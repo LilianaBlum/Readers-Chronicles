@@ -1,4 +1,4 @@
-namespace Readers_Chronicle.Models
+namespace ReadersChronicle.Models
 {
     public class ErrorViewModel
     {

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Readers_Chronicle.Models;
+using ReadersChronicle.Models;
 using System.Diagnostics;
 
-namespace Readers_Chronicle.Controllers
+namespace ReadersChronicle.Controllers
 {
     public class HomeController : Controller
     {
