@@ -1,24 +1,84 @@
 ﻿@model ReadersChronicle.Models.LoginViewModel
 
-<h2>Login</h2>
-@using (Html.BeginForm("Login", "Account", FormMethod.Post))
-{
-    <div>
-        @Html.LabelFor(m => m.UserName)
-        @Html.TextBoxFor(m => m.UserName)
-        @Html.ValidationMessageFor(m => m.UserName)
-    </div>
+<div class="container">
+    <div id="login-container" class="mt-5">
+        <h2 class="fw-bold text-uppercase text-center">Sign Up</h2>
+        <form method="post" action="/Account/Login">
+            <div class="form-group py-3">
+                <label for="userName" class="pb-1 ps-2">Username</label>
+                <input type="text" class="form-control rounded-pill w-100" id="userName" name="UserName">
+                <small class="form-text text-danger">@Html.ValidationMessageFor(m => m.UserName)</small>
+            </div>
 
-    <div>
-        @Html.LabelFor(m => m.Password)
-        @Html.PasswordFor(m => m.Password)
-        @Html.ValidationMessageFor(m => m.Password)
-    </div>
+            <div class="form-group pb-4">
+                <label for="password" class="pb-1 ps-2">Password</label>
+                <input type="password" class="form-control rounded-pill w-100" id="password" name="Password">
+                <small class="form-text text-danger">@Html.ValidationMessageFor(m => m.Password)</small>
+            </div>
 
-    <div>
-        @Html.CheckBoxFor(m => m.RememberMe)
-        @Html.LabelFor(m => m.RememberMe)
-    </div>
+            @* <div class="form-check pb-4 custom-checkbox">
+            <input type="checkbox" class="form-check-input" id="rememberMe" name="RememberMe">
+            <label class="form-check-label" for="rememberMe">Remember Me</label>
+            </div> *@
 
-    <button type="submit">Login</button>
-}
+            <button type="submit" class="btn btn-primary rounded-pill w-100 mt-2">Login</button>
+        </form>
+        <p class="text-decoration-underline small text-end pt-4">Forgot your password?</p>
+    </div>
+    <div class="pt-5" id="create-account">
+        <div class="row align-items-center">
+            <div class="col-4">
+                <hr>
+            </div>
+            <div class="col-4 text-center">
+                <span><h5>New to application?</h5></span>
+            </div>
+            <div class="col-4">
+                <hr>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <button type="submit" id="create-account-button" class="btn btn-light rounded-pill w-100 mt-2">Create an account!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    #login-container{
+        border: solid black 1px;
+        padding: 2rem 4rem;
+        border-radius: 5%;
+        width:80vh;
+    }
+
+    #login-container {
+        padding: 2rem 4rem;
+        width: 80vh;
+    }
+
+    .btn-primary{
+        background-color:grey;
+        border:none;
+    }
+
+    .btn-primary:hover{
+        background-color:dimgrey;
+    }
+
+    label {
+        color:grey;
+    }
+
+    #create-account-button {
+        border:grey 1px solid;
+    }
+
+    .custom-checkbox .form-check-input:checked {
+        background-color: darkslategrey;
+        border-color: darkslategrey;
+</style>
+
