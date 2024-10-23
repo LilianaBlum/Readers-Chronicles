@@ -1,6 +1,14 @@
 @model ReadersChronicle.Models.RegisterViewModel;
 
 <h2>Register</h2>
+@if (ViewData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@ViewData["ErrorMessage"]</div>
+}
+else if (ViewData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@ViewData["SuccessMessage"]</div>
+}
 @using (Html.BeginForm("Register", "Account", FormMethod.Post))
 {
 <div>
