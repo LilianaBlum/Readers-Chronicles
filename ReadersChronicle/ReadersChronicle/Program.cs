@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using ReadersChronicle.Data;
+
 namespace ReadersChronicle
 {
     public class Program
@@ -7,7 +10,13 @@ namespace ReadersChronicle
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            // Add Razor Pages and Controllers with Views
             builder.Services.AddRazorPages();
+            builder.Services.AddControllersWithViews();
+
+            // Add DbContext to the services
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var app = builder.Build();
 
@@ -26,10 +35,10 @@ namespace ReadersChronicle
 
             app.UseAuthorization();
 
+            // Set up default controller routing
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
-
 
             app.MapRazorPages();
 
