@@ -16,14 +16,17 @@ namespace ReadersChronicle.Data
         public string Email {  get; set; }
 
         [Required]
-        [MaxLength(256)]
-        public string Password { get; set; }
+        public string PasswordHash { get; set; }
 
         [Required]
         public DateTime JoinDate { get; set; }
 
         [Required]
         public string UserType { get; set; } = "user";
+        [Required]
+        public string SecurityQuestion { get; set; }
+        [Required]
+        public string SecurityAnswerHash { get; set; }
 
         public virtual Profile Profile { get; set; }
         public ICollection<Friendship> Friendships1 { get; set; } // For friendships initiated by this user

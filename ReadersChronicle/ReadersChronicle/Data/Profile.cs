@@ -12,8 +12,8 @@ namespace ReadersChronicle.Data
         public int UserID { get; set; }
 
         public string Bio {  get; set; }
-        
-        public string ProfilePicture { get; set; }
+        public string ImageMimeType { get; set; }
+        public byte[] ImageData { get; set; }
 
         public virtual User User {  get; set; }
     }

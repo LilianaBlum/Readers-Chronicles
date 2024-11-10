@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace ReadersChronicle.Models
 {
@@ -17,5 +18,10 @@ namespace ReadersChronicle.Models
 
         [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string SecurityQuestion {  get; set; }
+        [Required]
+        public string SecurityAnswer { get; set; }
     }
 }
