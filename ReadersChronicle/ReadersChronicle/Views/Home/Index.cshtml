@@ -1,10 +1,52 @@
 ﻿@page
 
 @{
-    // ViewData["Title"] = "Home page";
+    var isAuthenticated = User.Identity.IsAuthenticated;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (!isAuthenticated)
+{
+    <div class="text-center">
+        <h2>Welcome to the Application</h2>
+        <p>To enjoy all the features, please <a href="/Account/Login">log in</a> or <a href="/Account/Register">register</a> an account.</p>
+    </div>
+}
+
+
+<style>
+    .centered-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 2rem;
+        width: 80%;
+        max-width: 400px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        text-align: center;
+    }
+
+        .centered-prompt h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .centered-prompt p {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .centered-prompt a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            .centered-prompt a:hover {
+                text-decoration: underline;
+            }
+</style>

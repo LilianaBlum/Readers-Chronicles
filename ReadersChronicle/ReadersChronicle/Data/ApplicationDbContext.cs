@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace ReadersChronicle.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-        public DbSet<User> Users { get; set; }
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -31,16 +31,25 @@ namespace ReadersChronicle.Data
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascading deletes if needed
 
             modelBuilder.Entity<Message>()
-                .HasOne(m => m.Sender)
-                .WithMany(u => u.SentMessages)
-                .HasForeignKey(m => m.SenderID)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading deletes if needed
+            .HasOne(m => m.Sender)
+            .WithMany(u => u.SentMessages)
+            .HasForeignKey(m => m.SenderID)
+            .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Receiver)
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(m => m.ReceiverID)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading deletes if needed
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>()
+        .HasKey(u => u.Id);
+
+            modelBuilder.Entity<Profile>()
+        .HasOne(p => p.User)
+        .WithOne(u => u.Profile) // Assuming one-to-one relationship
+        .HasForeignKey<Profile>(p => p.UserID) // Set foreign key to UserID
+        .OnDelete(DeleteBehavior.Restrict); // Configure deletion behavior as needed
 
             base.OnModelCreating(modelBuilder);
         }

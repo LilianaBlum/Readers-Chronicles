@@ -9,10 +9,10 @@ namespace ReadersChronicle.Data
         public int FriendshipID { get; set; }
 
         [ForeignKey("User1")]
-        public int UserID1 { get; set; }
+        public string UserID1 { get; set; }
 
         [ForeignKey("User2")]
-        public int UserID2 { get; set; }
+        public string UserID2 { get; set; }
 
         public string FriendshipStatus {  get; set; }
 

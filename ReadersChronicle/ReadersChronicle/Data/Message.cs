@@ -9,9 +9,9 @@ namespace ReadersChronicle.Data
         public int MessageID { get; set; }
 
         [ForeignKey("Sender")]
-        public int SenderID { get; set; } // Foreign key for the sender
+        public string SenderID { get; set; } // Foreign key for the sender
         [ForeignKey("Receiver")]
-        public int ReceiverID { get; set; } // Foreign key for the receiver
+        public string ReceiverID { get; set; } // Foreign key for the receiver
 
         [Required]
         public string Content { get; set; }
@@ -20,7 +20,7 @@ namespace ReadersChronicle.Data
 
         public bool IsRead { get; set; }
 
-        public User Sender { get; set; } // The user who sent the message
-        public User Receiver { get; set; } // The user who received the message
+        public virtual User Sender { get; set; } // The user who sent the message
+        public virtual User Receiver { get; set; } // The user who received the message
     }
 }

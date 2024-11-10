@@ -1,28 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace ReadersChronicle.Data
 {
-    public class User
+    public class User : IdentityUser
     {
-        [Key]
-        public int UserID { get; set; }
-
-        [Required]
-        [StringLength(25)]
-        public string UserName { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string Email {  get; set; }
-
-        [Required]
-        public string PasswordHash { get; set; }
-
         [Required]
         public DateTime JoinDate { get; set; }
 
         [Required]
         public string UserType { get; set; } = "user";
+
+        public bool IsOnline { get; set; }
         [Required]
         public string SecurityQuestion { get; set; }
         [Required]

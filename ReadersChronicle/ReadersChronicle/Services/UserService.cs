@@ -15,39 +15,27 @@ namespace ReadersChronicle.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly JwtSettings _jwtSettings;
+        private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
 
-        public UserService(ApplicationDbContext context, IOptions<JwtSettings> jwtSettings)
+        public UserService(ApplicationDbContext context, IOptions<JwtSettings> jwtSettings, UserManager<User> userManager, IConfiguration configuration)
         {
             _context = context;
             _jwtSettings = jwtSettings.Value;
+            _userManager = userManager;
+            _configuration = configuration;
         }
 
         public async Task<bool> IsUsernameUniqueAsync(string username)
         {
-            return !await _context.Users.AnyAsync(u => u.UserName == username);
+            var user = _context.Users.Where(user => user.UserName.Equals(username)).FirstOrDefault(); // Use UserManager to find user by username
+            return user == null;
         }
 
         public async Task<bool> IsEmailUniqueAsync(string email)
         {
-            return !await _context.Users.AnyAsync(u => u.Email == email);
-        }
-
-        public async Task RegisterUserAsync(RegisterViewModel model)
-        {
-            var passwordHasher = new PasswordHasher<User>();
-            var user = new User
-            {
-                UserName = model.UserName,
-                Email = model.Email,
-                JoinDate = DateTime.UtcNow,
-                PasswordHash = passwordHasher.HashPassword(null, model.Password),
-                SecurityQuestion = model.SecurityQuestion,
-                SecurityAnswerHash = passwordHasher.HashPassword(null, model.SecurityAnswer)
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            await CreateUserProfile(model.UserName);
+            var user = _context.Users.Where(user => user.UserName.Equals(email)).FirstOrDefault();
+            return user == null;
         }
 
         public async Task CreateUserProfile(string username)
@@ -61,7 +49,7 @@ namespace ReadersChronicle.Services
 
             var profile = new Profile
             {
-                UserID = user.UserID,
+                UserID = user.Id, // user.Id is a string, which matches IdentityUser
                 Bio = "This is your profile bio!",
                 ImageMimeType = mimeType,
                 ImageData = profilePictureData
@@ -73,34 +61,70 @@ namespace ReadersChronicle.Services
 
         public async Task<string> LoginUser(LoginViewModel model)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == model.UserName || u.Email == model.UserName);
+            var user = await _userManager.FindByNameAsync(model.UserName);
+
             if (user == null) return null;
 
-            var passwordHasher = new PasswordHasher<User>();
-            var passwordVerification = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
-            if(passwordVerification != PasswordVerificationResult.Success) return null;
-            return GenerateJwtToken(user);
+            // You can optionally add more checks here if you want (e.g., account lock, etc.)
+            if (await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                return GenerateJwtToken(user); // Generate token if the user is valid
+            }
+
+            return null;
         }
 
-        public string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
-                new Claim("userName", user.UserName),
-                new Claim("userId", user.UserID.ToString()),
-                new Claim("userRole", user.UserType)
-            };
+            new Claim("userName", user.UserName),
+            new Claim("userId", user.Id.ToString()),
+            new Claim("userRole", user.UserType)
+        };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddHours(5),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<string> GetSecurityQuestionAsync(string userNameOrEmail)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+            return user?.SecurityQuestion;
+        }
+
+        public async Task<bool> VerifySecurityAnswerAsync(string userNameOrEmail, string answer)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+
+            if (user == null) return false;
+
+            var passwordHasher = new PasswordHasher<User>();
+            return passwordHasher.VerifyHashedPassword(null, user.SecurityAnswerHash, answer) == PasswordVerificationResult.Success;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string userNameOrEmail, string newPassword)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+
+            if (user == null) return false;
+
+            var passwordHasher = new PasswordHasher<User>();
+            user.PasswordHash = passwordHasher.HashPassword(null, newPassword);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

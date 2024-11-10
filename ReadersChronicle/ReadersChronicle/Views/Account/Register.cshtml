@@ -39,7 +39,12 @@ else if (ViewData["SuccessMessage"] != null)
 
     <div>
         @Html.LabelFor(m => m.SecurityQuestion)
-        @Html.TextBoxFor(m => m.SecurityQuestion)
+        @Html.DropDownListFor(m => m.SecurityQuestion, new SelectList(new[]
+                {
+    new { Value = "MotherMaidenName", Text = "What is your mother's maiden name?" },
+    new { Value = "FirstPet", Text = "What was the name of your first pet?" },
+    new { Value = "FavoriteTeacher", Text = "What is the name of your favorite teacher?" }
+    }, "Value", "Text"), "Select a question")
         @Html.ValidationMessageFor(m => m.SecurityQuestion)
     </div>
 

@@ -7,9 +7,7 @@ namespace ReadersChronicle.Data
     {
         [Key]
         public int ProfileID { get; set; }
-
-        [ForeignKey("User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         public string Bio {  get; set; }
         public string ImageMimeType { get; set; }

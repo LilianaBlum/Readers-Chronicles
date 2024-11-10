@@ -3,10 +3,6 @@
 <div class="container">
     <div id="login-container" class="mt-5">
         <h2 class="fw-bold text-uppercase text-center">Login</h2>
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-        }
         @if (ViewData.ModelState.ErrorCount > 0)
         {
             <div class="alert alert-danger">
@@ -52,6 +48,11 @@
                         onclick="location.href='@Url.Action("Register", "Account")'">
                     Create an account!
                 </button>
+            </div>
+        </div>
+        <div class="row mt-5">
+            <div class="col">
+                <p><a href="@Url.Action("ForgotPassword", "Account")">Forgot your password?</a></p>
             </div>
         </div>
     </div>
