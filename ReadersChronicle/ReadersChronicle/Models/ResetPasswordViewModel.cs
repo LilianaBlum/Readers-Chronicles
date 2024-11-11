@@ -4,7 +4,6 @@ namespace ReadersChronicle.Models
 {
     public class ResetPasswordViewModel
     {
-        [Required]
         public string UserNameOrEmail { get; set; }
 
         [Required]

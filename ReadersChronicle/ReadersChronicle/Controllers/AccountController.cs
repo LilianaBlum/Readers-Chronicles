@@ -208,10 +208,17 @@ namespace ReadersChronicle.Controllers
                 return RedirectToAction("ForgotPassword");
             }
 
-            ViewData["SecurityQuestion"] = TempData["SecurityQuestion"];
             TempData.Keep("UserNameOrEmail");
 
-            return View(new ResetPasswordViewModel());
+            ViewData["SecurityQuestion"] = TempData["SecurityQuestion"];
+            TempData.Keep("SecurityQuestion");
+
+            var model = new ResetPasswordViewModel
+            {
+                UserNameOrEmail = TempData["UserNameOrEmail"] as string
+            };
+
+            return View(model);
         }
 
         [HttpPost]
