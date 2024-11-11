@@ -150,22 +150,29 @@ namespace ReadersChronicle.Controllers
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
-            if(user == null)
+            if (user == null)
             {
-                return NotFound("User not found");
+                return RedirectToAction("Login", "Account");
+            }
+
+            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
+            if (profile == null)
+            {
+                return RedirectToAction("CreateProfile"); // Or create an empty profile
             }
 
             var model = new ProfileViewModel
             {
                 UserName = user.UserName,
                 Email = user.Email,
-                Bio = user.Profile?.Bio,
-                ProfilePicture = user.Profile?.ImageData
+                Bio = profile.Bio,
+                ProfileImage = profile.ImageData != null
+                    ? $"data:{profile.ImageMimeType};base64,{Convert.ToBase64String(profile.ImageData)}"
+                    : null // Display a default image if no profile image exists
             };
 
             return View(model);
         }
-
 
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -235,11 +242,124 @@ namespace ReadersChronicle.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditProfile()
         {
-            // TODO: logic to display profile editing
-            return View();
+            // Retrieve the current user
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Retrieve the profile
+            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
+            if (profile == null)
+            {
+                return RedirectToAction("CreateProfile"); // Redirect if no profile exists
+            }
+
+            // Prepare the model with current user data
+            var model = new EditProfileViewModel
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Bio = profile.Bio,
+            };
+
+            return View(model);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Retrieve the existing profile
+                var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
+                if (profile == null)
+                {
+                    return RedirectToAction("CreateProfile"); // Create a profile if one doesn't exist
+                }
+
+                // Update user properties
+                user.UserName = model.UserName;
+                user.Email = model.Email;
+                profile.Bio = model.Bio;
+
+                // Save changes to the database
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+                return RedirectToAction("Profile"); // Redirect to the profile page after successful update
+            }
+
+            // If there were validation errors, return the view with the model
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeProfileImage(IFormFile ProfileImage)
+        {
+            if (ProfileImage != null && ProfileImage.Length > 0)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Retrieve the user's profile
+                var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
+                if (profile == null)
+                {
+                    // If no profile exists, create one
+                    profile = new Profile
+                    {
+                        UserID = user.Id
+                    };
+                    _context.Profiles.Add(profile);
+                }
+
+                // Store the new profile image data
+                using (var memoryStream = new MemoryStream())
+                {
+                    await ProfileImage.CopyToAsync(memoryStream);
+                    profile.ImageData = memoryStream.ToArray();
+                    profile.ImageMimeType = ProfileImage.ContentType;
+                }
+
+                // Save the changes to the database
+                await _context.SaveChangesAsync();
+
+                // Optionally, redirect to the profile page or show success message
+                TempData["SuccessMessage"] = "Profile image updated successfully!";
+                return RedirectToAction("Profile");
+            }
+
+            // If the image is not valid, return an error
+            ModelState.AddModelError(string.Empty, "Please select a valid profile image.");
+            return RedirectToAction("Profile"); // Or return to the current page with error
+        }
+
 
         public async Task<IActionResult> ChangePassword()
         {
