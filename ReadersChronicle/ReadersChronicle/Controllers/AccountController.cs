@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Jose;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Options;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
+using System.Net.NetworkInformation;
 
 namespace ReadersChronicle.Controllers
 {
@@ -145,6 +147,25 @@ namespace ReadersChronicle.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if(user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var model = new ProfileViewModel
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Bio = user.Profile?.Bio,
+                ProfilePicture = user.Profile?.ImageData
+            };
+
+            return View(model);
+        }
+
 
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -212,6 +233,30 @@ namespace ReadersChronicle.Controllers
 
             TempData["SuccessMessage"] = "Password has been reset successfully.";
             return RedirectToAction("Login");
+        }
+
+        public async Task<IActionResult> EditProfile()
+        {
+            // TODO: logic to display profile editing
+            return View();
+        }
+
+        public async Task<IActionResult> ChangePassword()
+        {
+            // TODO: Logic to change password
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteProfile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if(user != null)
+            {
+                await _userManager.DeleteAsync(user);
+                await _signInManager.SignOutAsync();
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

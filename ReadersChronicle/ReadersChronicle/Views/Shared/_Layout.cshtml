@@ -28,6 +28,9 @@
                         {
                             <!-- Show logout button if the user is authenticated -->
                             <li class="nav-item">
+                                <a class="fw-bold nav-link text-dark" asp-controller="Account" asp-action="Profile">Profile</a>
+                            </li>
+                            <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" id="logout-form">
                                     <button type="submit" class="btn btn-link nav-link text-dark">Logout</button>
                                 </form>

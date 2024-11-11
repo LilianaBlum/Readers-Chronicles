@@ -1,0 +1,35 @@
+﻿@model ReadersChronicle.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container mt-4">
+    <h2 class="fw-bold">Your Profile</h2>
+
+    <div class="text-center my-4">
+        @if (Model.ProfilePicture != null)
+        {
+            <img src="data:image/png;base64,@(Convert.ToBase64String(Model.ProfilePicture))" class="rounded-circle" alt="Profile Picture" width="150" height="150" />
+        }
+        else
+        {
+            <img src="~/Common/profile-picture.png" class="rounded-circle" alt="Profile Picture" width="150" height="150" />
+        }
+    </div>
+
+    <div class="mb-3">
+        <strong>Username:</strong> @Model.UserName
+    </div>
+    <div class="mb-3">
+        <strong>Email:</strong> @Model.Email
+    </div>
+    <div class="mb-3">
+        <strong>Bio:</strong> @Model.Bio ?? "No bio available."
+    </div>
+
+    <div class="mt-4">
+        <a class="btn btn-primary" asp-action="EditProfile" asp-controller="Account">Edit Profile</a>
+        <a class="btn btn-secondary" asp-action="ChangePassword" asp-controller="Account">Change Password</a>
+        <a class="btn btn-danger" asp-action="DeleteProfile" asp-controller="Account" onclick="return confirm('Are you sure you want to delete your profile?')">Delete Profile</a>
+    </div>
+</div>
