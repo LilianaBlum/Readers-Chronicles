@@ -21,8 +21,8 @@
             <p>@Model.Email</p>
         </div>
         <div class="col-md-4 d-flex float-end">
-            <a href="@Url.Action("EditProfile", "Account")" class="btn profile-button btn-dark h-25 me-2 w-50">Edit</a>
-            <a class="btn btn-danger h-25 w-50 profile-button" asp-action="DeleteProfile" asp-controller="Account" onclick="return confirm('Are you sure you want to delete your profile?')">Delete</a>
+            <a href="@Url.Action("EditProfile", "Account")" class="btn profile-button btn-dark me-2">Edit</a>
+            <a class="btn btn-danger profile-button" asp-action="DeleteProfile" asp-controller="Account" onclick="return confirm('Are you sure you want to delete your profile?')">Delete</a>
         </div>
     </div>
 
@@ -33,13 +33,13 @@
 
     <div class="row my-3">
         <h5>My email address</h5>
-        <div class="col-md-8">
+        <div class="col-md-8 mt-2">
             <p>
                 <i class="fa fa-envelope" aria-hidden="true"></i>
                 <span>@Model.Email</span>
             </p>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 mt-3">
             <a href="@Url.Action("ChangePassword", "Account")" class="link-dark fw-bold">Change Password</a>
         </div>
     </div>
@@ -78,6 +78,7 @@
         background-color: #8d6b88;
         font-weight: bold;
         border: none;
+        height:3rem;
     }
 
     .profile-button:hover{
