@@ -22,13 +22,12 @@ namespace ReadersChronicle.Controllers
 
         public AccountController(ApplicationDbContext context, IOptions<JwtSettings> jwtSettings, UserManager<User> userManager, UserService userService, SignInManager<User> signInManager)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context)); // Throw if context is null
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _jwtSettings = jwtSettings.Value;
             _userService = userService;
             _signInManager = signInManager;
             _userManager = userManager;
         }
-        // GET: Account/Login
         public ActionResult Login()
         {
             return View();
@@ -51,18 +50,15 @@ namespace ReadersChronicle.Controllers
                 return View(model);
             }
 
-            // Instead of manually setting cookies, let ASP.NET Core Identity manage the authentication
             var user = await _userManager.FindByNameAsync(model.UserName);
             var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
 
             if (result.Succeeded)
             {
-                // Redirect the user to the home page or wherever they need to go
                 TempData["SuccessMessage"] = "Login successful!";
                 return RedirectToAction("Index", "Home");
             }
 
-            // If sign-in failed, add an error to ModelState
             ModelState.AddModelError(string.Empty, "Invalid username or password.");
             return View(model);
         }
@@ -71,20 +67,17 @@ namespace ReadersChronicle.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            // Remove the AuthToken cookie
             Response.Cookies.Delete("AuthToken");
 
-            // Sign out from the ASP.NET Core Identity
             await _signInManager.SignOutAsync();
 
-            return RedirectToAction("Index", "Home");  // Redirect to the home page after logout
+            return RedirectToAction("Index", "Home");
         }
 
-        // GET: Account/Register
         [HttpGet]
         public IActionResult Register()
         {
-            return View();  // No need to pass anything for SecurityQuestions
+            return View();
         }
 
         [HttpPost]
@@ -92,7 +85,6 @@ namespace ReadersChronicle.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check if the username and email are unique
                 if (!await _userService.IsUsernameUniqueAsync(model.UserName))
                 {
                     return BadRequest(new { message = "Username is already taken" });
@@ -103,39 +95,31 @@ namespace ReadersChronicle.Controllers
                     return BadRequest(new { message = "Email is already taken" });
                 }
 
-                // Create a new User object with the provided details
                 var user = new User
                 {
                     UserName = model.UserName,
                     Email = model.Email,
                     SecurityQuestion = model.SecurityQuestion,
-                    SecurityAnswerHash = new PasswordHasher<User>().HashPassword(null, model.SecurityAnswer) // Hash the security answer
+                    SecurityAnswerHash = new PasswordHasher<User>().HashPassword(null, model.SecurityAnswer)
                 };
 
-                // Register the user using UserManager (will hash the password automatically)
                 var result = await _userManager.CreateAsync(user, model.Password);
 
-                // Check if the registration succeeded
                 if (result.Succeeded)
                 {
-                    // Sign in the user automatically
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    // Optionally, create the user profile
                     await _userService.CreateUserProfile(user.UserName);
 
-                    // Redirect to Home page after successful registration
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
-                    // If registration failed, add errors to ModelState and return view
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError(string.Empty, error.Description); // Log the error messages
+                        ModelState.AddModelError(string.Empty, error.Description);
                     }
 
-                    // You can also log these errors to a log file for better diagnostics.
                     foreach (var error in result.Errors)
                     {
                         Console.WriteLine($"Error: {error.Description}");
@@ -143,7 +127,6 @@ namespace ReadersChronicle.Controllers
                 }
             }
 
-            // If the model is invalid, return the view with errors
             return View(model);
         }
 
@@ -158,7 +141,7 @@ namespace ReadersChronicle.Controllers
             var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
             if (profile == null)
             {
-                return RedirectToAction("CreateProfile"); // Or create an empty profile
+                return RedirectToAction("CreateProfile");
             }
 
             var model = new ProfileViewModel
@@ -168,7 +151,7 @@ namespace ReadersChronicle.Controllers
                 Bio = profile.Bio,
                 ProfileImage = profile.ImageData != null
                     ? $"data:{profile.ImageMimeType};base64,{Convert.ToBase64String(profile.ImageData)}"
-                    : null // Display a default image if no profile image exists
+                    : null
             };
 
             return View(model);
@@ -252,21 +235,18 @@ namespace ReadersChronicle.Controllers
         [HttpGet]
         public async Task<IActionResult> EditProfile()
         {
-            // Retrieve the current user
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            // Retrieve the profile
             var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
             if (profile == null)
             {
-                return RedirectToAction("CreateProfile"); // Redirect if no profile exists
+                return RedirectToAction("CreateProfile");
             }
 
-            // Prepare the model with current user data
             var model = new EditProfileViewModel
             {
                 UserName = user.UserName,
@@ -283,26 +263,22 @@ namespace ReadersChronicle.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Get the current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Retrieve the existing profile
                 var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
                 if (profile == null)
                 {
-                    return RedirectToAction("CreateProfile"); // Create a profile if one doesn't exist
+                    return RedirectToAction("CreateProfile");
                 }
 
-                // Update user properties
                 user.UserName = model.UserName;
                 user.Email = model.Email;
                 profile.Bio = model.Bio;
 
-                // Save changes to the database
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
@@ -315,10 +291,9 @@ namespace ReadersChronicle.Controllers
 
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Profile updated successfully!";
-                return RedirectToAction("Profile"); // Redirect to the profile page after successful update
+                return RedirectToAction("Profile");
             }
 
-            // If there were validation errors, return the view with the model
             return View(model);
         }
 
@@ -334,11 +309,9 @@ namespace ReadersChronicle.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Retrieve the user's profile
                 var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
                 if (profile == null)
                 {
-                    // If no profile exists, create one
                     profile = new Profile
                     {
                         UserID = user.Id
@@ -346,7 +319,6 @@ namespace ReadersChronicle.Controllers
                     _context.Profiles.Add(profile);
                 }
 
-                // Store the new profile image data
                 using (var memoryStream = new MemoryStream())
                 {
                     await ProfileImage.CopyToAsync(memoryStream);
@@ -354,35 +326,65 @@ namespace ReadersChronicle.Controllers
                     profile.ImageMimeType = ProfileImage.ContentType;
                 }
 
-                // Save the changes to the database
                 await _context.SaveChangesAsync();
 
-                // Optionally, redirect to the profile page or show success message
                 TempData["SuccessMessage"] = "Profile image updated successfully!";
                 return RedirectToAction("Profile");
             }
 
-            // If the image is not valid, return an error
             ModelState.AddModelError(string.Empty, "Please select a valid profile image.");
-            return RedirectToAction("Profile"); // Or return to the current page with error
+            return RedirectToAction("Profile");
         }
 
 
         public async Task<IActionResult> ChangePassword()
         {
-            // TODO: Logic to change password
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> DeleteProfile()
+        [HttpGet]
+        public IActionResult DeleteProfileConfirmation()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if(user != null)
+            return View(new DeleteProfileConfirmationViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteProfileConfirmation(DeleteProfileConfirmationViewModel model)
+        {
+            if (!ModelState.IsValid)
             {
-                await _userManager.DeleteAsync(user);
-                await _signInManager.SignOutAsync();
+                return View(model);
             }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Profile");
+            }
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            if (!passwordValid)
+            {
+                ModelState.AddModelError(string.Empty, "Incorrect password.");
+                return View(model);
+            }
+
+            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
+            if (profile != null)
+            {
+                _context.Profiles.Remove(profile);
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = "Error deleting user account.";
+                return RedirectToAction("Profile");
+            }
+
+            await _signInManager.SignOutAsync();
+            TempData["SuccessMessage"] = "Your profile has been deleted successfully.";
             return RedirectToAction("Index", "Home");
         }
     }

@@ -1,0 +1,32 @@
+﻿@using ReadersChronicle.Models
+@model List<UserBookViewModel>
+
+
+<div class="container mt-4">
+    <h3>Your Library</h3>
+
+    @if (Model.Count == 0)
+    {
+        <p>Your library is empty. Start adding books!</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var book in Model)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <img src="@Url.Action("GetCoverImage", "Account", new { bookId = book.UserBookID })" class="card-img-top" alt="@book.Title" />
+                        <div class="card-body">
+                            <h5 class="card-title">@book.Title</h5>
+                            <p class="card-text">@book.Author</p>
+                            <p class="card-text"><small>@book.Length pages</small></p>
+
+                            <!-- Optional: add functionality to remove, update status, etc. -->
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

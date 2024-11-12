@@ -1,52 +1,55 @@
-﻿@page
-
-@{
-    var isAuthenticated = User.Identity.IsAuthenticated;
+﻿@{
+    ViewData["Title"] = "Home";
+    bool isAuthenticated = User.Identity.IsAuthenticated;
 }
 
-@if (!isAuthenticated)
-{
-    <div class="text-center">
-        <h2>Welcome to the Application</h2>
-        <p>To enjoy all the features, please <a href="/Account/Login">log in</a> or <a href="/Account/Register">register</a> an account.</p>
-    </div>
+<div class="container mt-5">
+    @if (!isAuthenticated)
+    {
+        <div class="text-center">
+            <h2>Welcome to the Application</h2>
+            <p>To enjoy all the features, please <a href="@Url.Action("Login", "Account")">log in</a> or <a href="@Url.Action("Register", "Account")">register</a> an account.</p>
+        </div>
+    }
+    else
+    {
+        <h2 class="mb-4 pt-5 text-center">Search for Books</h2>
+        <form id="bookSearchForm" method="get" asp-action="SearchBooks">
+            <div class="input-group mb-3">
+                <input type="text" name="query" class="form-control" placeholder="Search by title or author" required />
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </form>
+
+        <div id="searchResults" class="row">
+            @* Book search results will be injected here *@
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).on('submit', '#bookSearchForm', function (e) {
+            e.preventDefault();
+
+            $.get('@Url.Action("SearchBooks", "Home")', $(this).serialize(), function (data) {
+                $('#searchResults').html(data);
+            });
+        });
+    </script>
 }
 
-
-<style>
-    .centered-prompt {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: white;
-        border: 1px solid #ccc;
-        padding: 2rem;
-        width: 80%;
-        max-width: 400px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
-        text-align: center;
+<style scoped>
+    .btn {
+        background-color: #8d6b88;
+        border: none;
     }
 
-        .centered-prompt h2 {
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-            color: #333;
-        }
+    .btn:hover{
+            background-color: #013a55;
+    }
 
-        .centered-prompt p {
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
-
-        .centered-prompt a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-            .centered-prompt a:hover {
-                text-decoration: underline;
-            }
+    .container{
+        width: 100vh;
+    }
 </style>

@@ -1,15 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace ReadersChronicle.Data
+namespace ReadersChronicle.Models
 {
-    public class UserBook
+    public class UserBookViewModel
     {
-        [Key]
         public int UserBookID { get; set; }
-
-        [ForeignKey("User")]
-        public string UserID { get; set; }
 
         public int BookApiID { get; set; }
 
@@ -26,16 +21,20 @@ namespace ReadersChronicle.Data
         [Required]
         public int Length { get; set; }
 
+        public string Status { get; set; } = "WantToRead"; // Want to read, Currently reading, Finished, DNF
+
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
         public int CurrentPage { get; set; }
 
-        public string Status { get; set; } = "WantToRead"; // Want to read, Currently reading, Finished, DNF (did not finish)
-
-
-        public virtual User User { get; set; }
-        public virtual BookJournal BookJournal { get; set; }
+        public string StatusDisplay => Status switch
+        {
+            "WantToRead" => "Want to Read",
+            "CurrentlyReading" => "Currently Reading",
+            "Finished" => "Finished",
+            "DNF" => "Did Not Finish",
+            _ => "Unknown"
+        };
     }
-
 }
