@@ -11,7 +11,7 @@ namespace ReadersChronicle.Data
         [ForeignKey("User")]
         public string UserID { get; set; }
 
-        public int BookApiID { get; set; }
+        public string BookApiID { get; set; }
 
         [Required]
         public string Title { get; set; }

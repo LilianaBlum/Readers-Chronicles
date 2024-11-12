@@ -7,20 +7,23 @@
 }
 else
 {
-    @foreach (var book in Model)
-    {
-        <div class="col-md-3 col-sm-6 mb-4 d-flex align-items-stretch mt-5">
-            <div class="card shadow-sm">
-                <img src="@book.CoverUrl" alt="Book Cover" class="card-img-top" style="height: 250px; object-fit: cover;" />
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">@book.Title</h5>
-                    <p class="card-text text-muted">Author: @book.Author</p>
-                    <p class="card-text">Pages: @book.PageCount</p>
-                    <a href="#" class="btn btn-primary mt-auto">View Details</a>
+    <div class="row w-100">
+        @foreach (var book in Model)
+        {
+            <div class="col-md-3 col-sm-6 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm">
+                    <img src="@book.CoverUrl" alt="Book Cover" class="card-img-top" style="height: 250px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@book.Title</h5>
+                        <p class="card-text text-muted">Author: @book.Author</p>
+                        <p class="card-text">Pages: @book.PageCount</p>
+                        <p class="card-text">BookID: @book.BookId</p>
+                        <button class="btn btn-primary mt-auto" data-book-id="@book.BookId" data-title="@book.Title" data-author="@book.Author" data-cover-url="@book.CoverUrl" data-page-count="@book.PageCount">Add to Library</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 }
 
 <style>
@@ -33,3 +36,27 @@ else
             transform: translateY(-5px);
         }
 </style>
+<script>
+    $(document).on('click', '.btn[data-book-id]', function () {
+        var button = $(this);
+        var bookApiID = button.data('book-id');
+        var title = button.data('title');
+        var author = button.data('author');
+        var coverUrl = button.data('cover-url');
+        var pageCount = button.data('page-count');
+
+        $.post('/Home/AddToLibrary', {
+            bookApiID: bookApiID,
+            title: title,
+            author: author,
+            coverUrl: coverUrl,
+            pageCount: pageCount
+        }, function (response) {
+            if (response.success) {
+                alert(response.message);
+            } else {
+                alert(response.message);
+            }
+        });
+    });
+</script>
