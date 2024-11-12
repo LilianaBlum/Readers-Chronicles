@@ -9,7 +9,7 @@ namespace ReadersChronicle.Data
         public int ReviewID { get; set; }
 
         [ForeignKey("User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         [Required]
         public string Content { get; set; }

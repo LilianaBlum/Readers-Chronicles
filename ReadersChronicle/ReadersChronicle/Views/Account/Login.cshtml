@@ -2,28 +2,32 @@
 
 <div class="container">
     <div id="login-container" class="mt-5">
-        <h2 class="fw-bold text-uppercase text-center">Sign Up</h2>
+        <h2 class="fw-bold text-uppercase text-center mb-4">Login</h2>
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger pt-2 pb-0 text-center">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p>@error.ErrorMessage</p>
+                }
+            </div>
+        }
         <form method="post" action="/Account/Login">
             <div class="form-group py-3">
-                <label for="userName" class="pb-1 ps-2">Username</label>
-                <input type="text" class="form-control rounded-pill w-100" id="userName" name="UserName">
-                <small class="form-text text-danger">@Html.ValidationMessageFor(m => m.UserName)</small>
+                @Html.LabelFor(m => m.UserName, new { @class = "pb-1 ps-2" })
+                @Html.TextBoxFor(m => m.UserName, new { @class = "form-control rounded-pill w-100" })
+                @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
             </div>
 
             <div class="form-group pb-4">
-                <label for="password" class="pb-1 ps-2">Password</label>
-                <input type="password" class="form-control rounded-pill w-100" id="password" name="Password">
-                <small class="form-text text-danger">@Html.ValidationMessageFor(m => m.Password)</small>
+                @Html.LabelFor(m => m.Password, new { @class = "pb-1 ps-2" })
+                @Html.PasswordFor(m => m.Password, new { @class = "form-control rounded-pill w-100" })
+                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
             </div>
-
-            @* <div class="form-check pb-4 custom-checkbox">
-            <input type="checkbox" class="form-check-input" id="rememberMe" name="RememberMe">
-            <label class="form-check-label" for="rememberMe">Remember Me</label>
-            </div> *@
 
             <button type="submit" class="btn btn-primary rounded-pill w-100 mt-2">Login</button>
         </form>
-        <p class="text-decoration-underline small text-end pt-4">Forgot your password?</p>
+        <p class="text-decoration-underline small text-end pt-4"><a href="@Url.Action("ForgotPassword", "Account")" class="text-dark">Forgot your password?</a></p>
     </div>
     <div class="pt-5" id="create-account">
         <div class="row align-items-center">
@@ -40,45 +44,37 @@
 
         <div class="row">
             <div class="col">
-                <button type="submit" id="create-account-button" class="btn btn-light rounded-pill w-100 mt-2">Create an account!</button>
+                <button type="button" id="create-account-button" class="btn btn-light rounded-pill w-100 mt-2"
+                        onclick="location.href='@Url.Action("Register", "Account")'">
+                    Create an account!
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-
 <style>
-    #login-container{
+    #login-container {
         border: solid black 1px;
         padding: 2rem 4rem;
         border-radius: 2rem;
-        width:80vh;
-    }
-
-    #login-container {
-        padding: 2rem 4rem;
         width: 80vh;
     }
 
-    .btn-primary{
-        background-color:grey;
-        border:none;
+    .btn-primary {
+        background-color: grey;
+        border: none;
     }
 
-    .btn-primary:hover{
-        background-color:dimgrey;
-    }
+        .btn-primary:hover {
+            background-color: dimgrey;
+        }
 
     label {
-        color:grey;
+        color: grey;
     }
 
     #create-account-button {
-        border:grey 1px solid;
+        border: grey 1px solid;
     }
-
-    .custom-checkbox .form-check-input:checked {
-        background-color: darkslategrey;
-        border-color: darkslategrey;
 </style>
-

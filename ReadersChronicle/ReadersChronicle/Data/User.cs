@@ -1,29 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace ReadersChronicle.Data
 {
-    public class User
+    public class User : IdentityUser
     {
-        [Key]
-        public int UserID { get; set; }
-
-        [Required]
-        [StringLength(25)]
-        public string UserName { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string Email {  get; set; }
-
-        [Required]
-        [StringLength(30)]
-        public string Password { get; set; }
-
         [Required]
         public DateTime JoinDate { get; set; }
 
         [Required]
-        public string UserType { get; set; }
+        public string UserType { get; set; } = "user";
+
+        public bool IsOnline { get; set; }
+        [Required]
+        public string SecurityQuestion { get; set; }
+        [Required]
+        public string SecurityAnswerHash { get; set; }
 
         public virtual Profile Profile { get; set; }
         public ICollection<Friendship> Friendships1 { get; set; } // For friendships initiated by this user

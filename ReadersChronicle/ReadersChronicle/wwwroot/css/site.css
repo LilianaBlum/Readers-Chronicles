@@ -24,3 +24,14 @@ body {
 #main-container{
     height:90vh;
 }
+
+nav{
+    background-color: #8d6b88 !important;
+    color: white !important;
+    font-size:20px;
+}
+
+#logout-button{
+    font-size:18px;
+    margin-top:2px;
+}
