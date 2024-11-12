@@ -39,6 +39,7 @@ namespace ReadersChronicle
     });
 
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+            builder.Services.AddHttpClient<BookService>();
             builder.Services.AddScoped<UserService>();
 
             var app = builder.Build();

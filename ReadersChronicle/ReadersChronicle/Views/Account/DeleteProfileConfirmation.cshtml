@@ -1,0 +1,21 @@
+﻿@model ReadersChronicle.Models.DeleteProfileConfirmationViewModel
+
+<h2>Confirm Profile Deletion</h2>
+<p>To delete your profile, please confirm by entering your password.</p>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+<form asp-action="DeleteProfileConfirmation" method="post">
+    <div class="form-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-danger mt-3">Delete Profile</button>
+    <a asp-action="Profile" class="btn btn-secondary mt-3">Cancel</a>
+</form>

@@ -1,0 +1,40 @@
+﻿@using ReadersChronicle.Models
+@model List<UserBookViewModel>
+
+<h2 class="mb-5">Your Library</h2>
+
+@if (Model.Count == 0)
+{
+    <p>You don't have any books in your library yet. Search for books and add them!</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var book in Model)
+        {
+            <div class="col-md-3 col-sm-6 mb-4 d-flex align-items-stretch">
+                <div class="card">
+                    <img src="data:image/jpeg;base64,@book.CoverImageBase64" alt="Book Cover" class="card-img-top" style="height: 250px; object-fit: cover;" />
+                    <div class="card-body">
+                        <h5 class="card-title">@book.Title</h5>
+                        <p class="card-text">@book.Author</p>
+                        <p class="card-text">Pages: @book.Length</p>
+                        <p class="card-text">Status: @book.Status</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+
+<style>
+    .card {
+        border: none;
+        transition: transform 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+</style>

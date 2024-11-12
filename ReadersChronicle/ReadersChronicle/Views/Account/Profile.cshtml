@@ -3,7 +3,7 @@
     ViewData["Title"] = "Profile";
 }
 
-<div class="container mt-4">
+<div class="container mt-4 w-75">
     <div class="row mb-5">
         <h3>Welcome, @Model.UserName</h3>
     </div>
@@ -22,7 +22,7 @@
         </div>
         <div class="col-md-4 d-flex float-end">
             <a href="@Url.Action("EditProfile", "Account")" class="btn profile-button btn-dark me-2">Edit</a>
-            <a class="btn btn-danger profile-button" asp-action="DeleteProfile" asp-controller="Account" onclick="return confirm('Are you sure you want to delete your profile?')">Delete</a>
+            <a class="btn profile-button text-white" href="@Url.Action("DeleteProfileConfirmation", "Account")">Delete</a>
         </div>
     </div>
 

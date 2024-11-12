@@ -11,8 +11,7 @@ namespace ReadersChronicle.Data
         [ForeignKey("User")]
         public string UserID { get; set; }
 
-        [ForeignKey("Book")]
-        public int BookID { get; set; }
+        public string BookApiID { get; set; }
 
         [Required]
         public string Title { get; set; }
@@ -20,20 +19,20 @@ namespace ReadersChronicle.Data
         [Required]
         public string Author { get; set; }
 
-        [Required]
-        public string Description { get; set; }
+        public byte[] Picture { get; set; }
+
+        public string PictureMimeType { get; set; }
 
         [Required]
-        public string Folder { get; set; } // "Want to Read", "Currently Reading", "Read", "DNF"
+        public int Length { get; set; }
 
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
         public int CurrentPage { get; set; }
 
-        public string Status { get; set; } // Not started, in progress, finished, dnf
+        public string Status { get; set; } = "WantToRead"; // Want to read, Currently reading, Finished, DNF (did not finish)
 
-        public double? OverallRating { get; set; }
 
         public virtual User User { get; set; }
         public virtual BookJournal BookJournal { get; set; }
