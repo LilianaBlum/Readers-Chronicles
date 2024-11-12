@@ -85,15 +85,13 @@ namespace ReadersChronicle.Controllers
         {
             if (string.IsNullOrEmpty(coverUrl))
             {
-                return null; // Return null if no cover URL is provided
+                return null;
             }
 
             try
             {
-                // Initialize HttpClient to download the image
                 using (var httpClient = new HttpClient())
                 {
-                    // Get the image content as a byte array
                     var imageBytes = await httpClient.GetByteArrayAsync(coverUrl);
 
                     return imageBytes;
@@ -101,13 +99,40 @@ namespace ReadersChronicle.Controllers
             }
             catch (Exception ex)
             {
-                // Log error if the image could not be retrieved (you can use a logging library)
                 Console.WriteLine($"Error downloading book cover image: {ex.Message}");
-                return null; // Return null if an error occurred
+                return null;
             }
         }
 
-        public async Task<IActionResult> UserLibrary()
+        public async Task<IActionResult> UserLibrary(string status = "CurrentlyReading")
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewData["SelectedStatus"] = status;
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBooks = await _context.UserBooks
+                .Where(b => b.UserID == userId && b.Status == status)
+                .ToListAsync();
+
+            var userBookViewModels = userBooks.Select(book => new UserBookViewModel
+            {
+                UserBookID = book.UserBookID,
+                Title = book.Title,
+                Author = book.Author,
+                Length = book.Length,
+                Status = book.Status,
+                CoverImageBase64 = book.Picture != null ? Convert.ToBase64String(book.Picture) : null
+            }).ToList();
+
+            return View(userBookViewModels);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeStatus(int userBookId, string newStatus)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -115,21 +140,17 @@ namespace ReadersChronicle.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userBooks = await _context.UserBooks
-                .Where(b => b.UserID == userId)
-                .ToListAsync();
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
 
-            // Map UserBook to UserBookViewModel
-            var userBookViewModels = userBooks.Select(book => new UserBookViewModel
+            if (userBook != null)
             {
-                Title = book.Title,
-                Author = book.Author,
-                Length = book.Length,
-                Status = book.Status,
-                CoverImageBase64 = book.Picture != null ? Convert.ToBase64String(book.Picture) : null  // Convert image to base64
-            }).ToList();
+                userBook.Status = newStatus;
+                await _context.SaveChangesAsync();
+            }
 
-            return View(userBookViewModels);
+            return RedirectToAction("UserLibrary", new { status = newStatus });
         }
     }
 }

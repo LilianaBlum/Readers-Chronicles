@@ -3,7 +3,7 @@
     ViewData["Title"] = "Profile";
 }
 
-<div class="container mt-4 w-75">
+<div class="container w-75">
     <div class="row mb-5">
         <h3>Welcome, @Model.UserName</h3>
     </div>
@@ -69,7 +69,13 @@
 
 <link href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" rel="stylesheet" />
 
-<style>
+<style scoped>
+    main{
+        justify-content:center;
+        align-content:center;
+        padding-bottom:15rem !important;
+    }
+
     body{
         background-color: #f5f5f5;
     }

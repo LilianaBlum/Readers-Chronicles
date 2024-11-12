@@ -4,6 +4,7 @@ namespace ReadersChronicle.Models
 {
     public class UserBookViewModel
     {
+        public int UserBookID { get; set; }
         public string Title { get; set; }
         public string Author { get; set; }
         public int Length { get; set; }
