@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
@@ -85,15 +86,13 @@ namespace ReadersChronicle.Controllers
         {
             if (string.IsNullOrEmpty(coverUrl))
             {
-                return null; // Return null if no cover URL is provided
+                return null;
             }
 
             try
             {
-                // Initialize HttpClient to download the image
                 using (var httpClient = new HttpClient())
                 {
-                    // Get the image content as a byte array
                     var imageBytes = await httpClient.GetByteArrayAsync(coverUrl);
 
                     return imageBytes;
@@ -101,13 +100,40 @@ namespace ReadersChronicle.Controllers
             }
             catch (Exception ex)
             {
-                // Log error if the image could not be retrieved (you can use a logging library)
                 Console.WriteLine($"Error downloading book cover image: {ex.Message}");
-                return null; // Return null if an error occurred
+                return null;
             }
         }
 
-        public async Task<IActionResult> UserLibrary()
+        public async Task<IActionResult> UserLibrary(string status = "CurrentlyReading")
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewData["SelectedStatus"] = status;
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBooks = await _context.UserBooks
+                .Where(b => b.UserID == userId && b.Status == status)
+                .ToListAsync();
+
+            var userBookViewModels = userBooks.Select(book => new UserBookViewModel
+            {
+                UserBookID = book.UserBookID,
+                Title = book.Title,
+                Author = book.Author,
+                Length = book.Length,
+                Status = book.Status,
+                CoverImageBase64 = book.Picture != null ? Convert.ToBase64String(book.Picture) : null,
+                CurrentPage = book.CurrentPage,
+            }).ToList();
+
+            return View(userBookViewModels);
+        }
+
+        public async Task<IActionResult> BookJournal()
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -115,21 +141,251 @@ namespace ReadersChronicle.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userBooks = await _context.UserBooks
-                .Where(b => b.UserID == userId)
-                .ToListAsync();
 
-            // Map UserBook to UserBookViewModel
-            var userBookViewModels = userBooks.Select(book => new UserBookViewModel
+            var journalEntries = await _context.BookJournals
+        .Where(j => j.UserBook.UserID == userId)
+        .Include(j => j.UserBook)
+        .ToListAsync();
+
+            var viewModel = journalEntries.Select(journal => new BookJournalViewModel
             {
-                Title = book.Title,
-                Author = book.Author,
-                Length = book.Length,
-                Status = book.Status,
-                CoverImageBase64 = book.Picture != null ? Convert.ToBase64String(book.Picture) : null  // Convert image to base64
+                JournalID = journal.JournalID,
+                UserBook = journal.UserBook,
+                StartDate = journal.StartDate,
+                EndDate = journal.EndDate,
+                OverallImpression = journal.OverallImpression,
+                Insights = journal.Insights,
+                AuthorsAim = journal.AuthorsAim,
+                Recommendation = journal.Recommendation,
+                AdditionalNotes = journal.AdditionalNotes
             }).ToList();
 
-            return View(userBookViewModels);
+
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeStatus(int userBookId, string newStatus)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                if (newStatus == "CurrentlyReading")
+                {
+                    userBook.StartDate = DateTime.Now;
+                }
+
+                userBook.Status = newStatus;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = newStatus });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProgress(int userBookId, int currentPage)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                userBook.CurrentPage = currentPage;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = "CurrentlyReading" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FinishBook(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                userBook.Status = "Finished";
+                userBook.CurrentPage = userBook.Length;
+                userBook.EndDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = "Finished" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkAsDNF(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                userBook.Status = "Dnf";
+                userBook.EndDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = "Dnf" });
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> AddToJournal(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Json(new { success = false, message = "You must be logged in to add a book to your journal." });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId &&
+                            (b.Status == "Finished" || b.Status == "Dnf"))
+                .FirstOrDefaultAsync();
+
+            if (userBook == null)
+            {
+                return Json(new { success = false, message = "Book not found or cannot be added to journal." });
+            }
+
+            var existingJournalEntry = await _context.BookJournals
+                .FirstOrDefaultAsync(j => j.UserBookID == userBookId);
+
+            if (existingJournalEntry != null)
+            {
+                return Json(new { success = false, message = "This book is already in your journal." });
+            }
+
+            var journalEntry = new BookJournal
+            {
+                UserBookID = userBookId,
+                StartDate = userBook.StartDate,
+                EndDate = userBook.EndDate,
+                OverallRating = null,
+                OverallImpression = "",
+                Insights = "",
+                AuthorsAim = "",
+                Recommendation = "",
+                AdditionalNotes = "",
+            };
+
+            _context.BookJournals.Add(journalEntry);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "The book has been successfully added to your journal." });
+        }
+
+        public async Task<IActionResult> EditJournal(int id)
+        {
+            var journal = await _context.BookJournals
+                .Where(j => j.JournalID == id)
+                .Select(j => new EditJournalViewModel
+                {
+                    JournalID = j.JournalID,
+                    UserBookID = j.UserBookID,
+                    Title = j.UserBook.Title,
+                    Author = j.UserBook.Author,
+                    StartDate = j.StartDate,
+                    EndDate = j.EndDate,
+                    OverallRating = j.OverallRating,
+                    OverallImpression = j.OverallImpression,
+                    Insights = j.Insights,
+                    AuthorsAim = j.AuthorsAim,
+                    Recommendation = j.Recommendation,
+                    AdditionalNotes = j.AdditionalNotes
+                })
+                .FirstOrDefaultAsync();
+
+            if (journal == null)
+            {
+                return NotFound();
+            }
+
+            return Json(journal);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveEditedJournal(EditJournalViewModel model)
+        {
+            try
+            {
+                var journal = await _context.BookJournals.FindAsync(model.JournalID);
+                if (journal != null)
+                {
+                    journal.StartDate = model.StartDate;
+                    journal.EndDate = model.EndDate;
+                    journal.OverallRating = model.OverallRating;
+                    journal.OverallImpression = string.IsNullOrEmpty(model.OverallImpression) ? string.Empty : model.OverallImpression;
+                    journal.Insights = string.IsNullOrEmpty(model.Insights) ? string.Empty : model.Insights;
+                    journal.AuthorsAim = string.IsNullOrEmpty(model.AuthorsAim) ? string.Empty : model.AuthorsAim;
+                    journal.Recommendation = string.IsNullOrEmpty(model.Recommendation) ? string.Empty : model.Recommendation;
+                    journal.AdditionalNotes = string.IsNullOrEmpty(model.AdditionalNotes) ? string.Empty : model.AdditionalNotes;
+
+                    await _context.SaveChangesAsync();
+
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var updatedJournalEntries = await _context.BookJournals
+                        .Where(j => j.UserBook.UserID == userId)
+                        .Include(j => j.UserBook)
+                        .ToListAsync();
+
+                    var viewModel = updatedJournalEntries.Select(journal => new BookJournalViewModel
+                    {
+                        JournalID = journal.JournalID,
+                        UserBook = journal.UserBook,
+                        StartDate = journal.StartDate,
+                        EndDate = journal.EndDate,
+                        OverallImpression = journal.OverallImpression,
+                        Insights = journal.Insights,
+                        AuthorsAim = journal.AuthorsAim,
+                        Recommendation = journal.Recommendation,
+                        AdditionalNotes = journal.AdditionalNotes
+                    }).ToList();
+
+                    return Json(new { success = true, updatedJournalEntries = viewModel });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Journal not found." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

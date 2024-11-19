@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ReadersChronicle</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ReadersChronicle.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark vw-100 border-bottom box-shadow mb-3 position-fixed">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark vw-100 border-bottom box-shadow mb-3 position-fixed" style="z-index:9999;">
             <div class="container">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">ReadersChronicle</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -26,9 +27,12 @@
                     <ul class="navbar-nav" style="width:100%">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <!-- Show logout button if the user is authenticated -->
-                            <li class="nav-item me-auto">
+                            <li class="nav-item">
                                 <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Home" asp-action="UserLibrary">Your Library</a>
+                            </li>
+
+                            <li class="nav-item me-auto">
+                                <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Home" asp-action="BookJournal">Book Journal</a>
                             </li>
                             <li class="nav-item">
                                 <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Account" asp-action="Profile">Profile</a>
@@ -41,7 +45,6 @@
                         }
                         else
                         {
-                            <!-- Show login and register links if the user is not authenticated -->
                             <li class="nav-item">
                                 <a class="nav-link text-white" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
@@ -55,7 +58,7 @@
         </nav>
     </header>
     <div class="container d-flex justify-content-center align-content-center" id="main-container">
-        <main role="main" class="pb-3 align-content-center w-100">
+        <main role="main" class="w-100">
             @RenderBody()
         </main>
     </div>

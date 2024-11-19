@@ -2,33 +2,247 @@
 @model List<UserBookViewModel>
 
 <h2 class="mb-5">Your Library</h2>
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(ViewData["SelectedStatus"]?.ToString() == "CurrentlyReading" ? "active" : "")"
+           href="@Url.Action("UserLibrary", "Home", new { status = "CurrentlyReading" })">Currently Reading</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(ViewData["SelectedStatus"]?.ToString() == "WantToRead" ? "active" : "")"
+           href="@Url.Action("UserLibrary", "Home", new { status = "WantToRead" })">Want to Read</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(ViewData["SelectedStatus"]?.ToString() == "Finished" ? "active" : "")"
+           href="@Url.Action("UserLibrary", "Home", new { status = "Finished" })">Finished</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(ViewData["SelectedStatus"]?.ToString() == "Dnf" ? "active" : "")"
+           href="@Url.Action("UserLibrary", "Home", new { status = "Dnf" })">DNF (Did Not Finish)</a>
+    </li>
+</ul>
 
-@if (Model.Count == 0)
-{
-    <p>You don't have any books in your library yet. Search for books and add them!</p>
+
+@{
+    var message = TempData["Message"] as string;
 }
-else
+
+<!-- Show the message here as an alert -->
+@if (!string.IsNullOrEmpty(message))
 {
-    <div class="row">
-        @foreach (var book in Model)
-        {
-            <div class="col-md-3 col-sm-6 mb-4 d-flex align-items-stretch">
-                <div class="card">
-                    <img src="data:image/jpeg;base64,@book.CoverImageBase64" alt="Book Cover" class="card-img-top" style="height: 250px; object-fit: cover;" />
-                    <div class="card-body">
-                        <h5 class="card-title">@book.Title</h5>
-                        <p class="card-text">@book.Author</p>
-                        <p class="card-text">Pages: @book.Length</p>
-                        <p class="card-text">Status: @book.Status</p>
-                    </div>
-                </div>
-            </div>
-        }
+    <div class="alert alert-info" id="message">
+        @message
     </div>
 }
 
+<div id="message-container" class="container mt-4" style="display: none;">
+    <div class="alert" id="message-alert" role="alert">
+        <span id="alert-message"></span>
+    </div>
+</div>
 
-<style>
+<div class="row">
+
+    @foreach (var book in Model)
+    {
+        <div class="col-md-3 col-sm-6 mb-4 d-flex align-items-stretch">
+            <div class="card">
+                <img src="data:image/jpeg;base64,@book.CoverImageBase64" alt="Book Cover" class="card-img-top" style="height: 250px; object-fit: cover;" />
+                <div class="card-body">
+                    <h5 class="card-title">@book.Title</h5>
+                    <p class="card-text">@book.Author</p>
+                    <p class="card-text">Pages: @book.Length</p>
+                    <p class="card-text">Status: @book.Status</p>
+
+                    <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#statusModal-@book.UserBookID">
+                        Change Status
+                    </button>
+
+                    @if (book.Status == "CurrentlyReading")
+                    {
+                        <!-- Update Progress Button -->
+                        <button type="button" class="btn btn-secondary mt-2" data-bs-toggle="modal" data-bs-target="#progressModal-@book.UserBookID">
+                            Update Progress
+                        </button>
+                    }
+
+                    @if (book.Status == "Finished" || book.Status == "Dnf")
+                    {
+                        <!-- Add to Journal Button -->
+                        <form method="post" action="@Url.Action("AddToJournal", "Home")" class="mt-2" onsubmit="addToJournal(@book.UserBookID, event)">
+                            <input type="hidden" name="userBookId" value="@book.UserBookID" />
+                            <button type="submit" class="btn btn-success">Add to Journal</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade mt-5" id="statusModal-@book.UserBookID" tabindex="-1" aria-labelledby="statusModalLabel-@book.UserBookID" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="statusModalLabel-@book.UserBookID">Change Book Status</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="@Url.Action("ChangeStatus", "Home")">
+                        <div class="modal-body">
+                            <input type="hidden" name="userBookId" value="@book.UserBookID" />
+                    
+                            <!-- Status Selection Dropdown -->
+                            <label for="newStatus" class="form-label">Select New Status</label>
+                            <select name="newStatus" class="form-select" id="newStatus">
+                                <option value="CurrentlyReading">Currently Reading</option>
+                                <option value="WantToRead">Want to Read</option>
+                                <option value="Finished">Finished</option>
+                                <option value="Dnf">DNF (Did Not Finish)</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Progress Modal -->
+        <div class="modal fade mt-5" id="progressModal-@book.UserBookID" tabindex="-1" aria-labelledby="progressModalLabel-@book.UserBookID" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="progressModalLabel-@book.UserBookID">Update Reading Progress</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="updateProgressForm-@book.UserBookID" method="post" action="@Url.Action("UpdateProgress", "Home")">
+                            <input type="hidden" name="userBookId" value="@book.UserBookID" />
+
+                            <label for="currentPage" class="form-label">Current Page</label>
+                            <input type="number"
+                                   class="form-control"
+                                   name="currentPage"
+                                   id="currentPage-@book.UserBookID"
+                                   value="@book.CurrentPage"
+                                   min="0"
+                                   max="@book.Length"
+                                   oninput="validatePageInput(@book.UserBookID, @book.Length)" />
+
+                            <p class="mt-3">Book Length: @book.Length pages</p>
+
+                            <div id="didYouFinish-@book.UserBookID" class="mt-3 d-none">
+                                <p>Did you finish the book?</p>
+                                <button type="button" class="btn btn-success" onclick="finishBook(@book.UserBookID)">Yes</button>
+                                <button type="button" class="btn btn-secondary" onclick="closeFinishPrompt(@book.UserBookID)">No</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Modal</button>
+                        <button type="button" class="btn btn-danger" onclick="markAsDNF(@book.UserBookID)">DNF</button>
+                        <button type="button" class="btn btn-success" onclick="finishBook(@book.UserBookID)">Finished</button>
+                        <button type="button" class="btn btn-primary" id="saveProgressBtn-@book.UserBookID" onclick="submitProgress(@book.UserBookID)">Save Progress</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function validatePageInput(bookId, bookLength) {
+        const currentPageInput = document.getElementById(`currentPage-${bookId}`);
+        const saveProgressBtn = document.getElementById(`saveProgressBtn-${bookId}`);
+        const didYouFinish = document.getElementById(`didYouFinish-${bookId}`);
+
+        const currentPage = parseInt(currentPageInput.value, 10);
+
+        // Disable the "Save Progress" button if the input is invalid
+        if (currentPage > bookLength || currentPage < 0) {
+            saveProgressBtn.disabled = true;
+        } else {
+            saveProgressBtn.disabled = false;
+        }
+
+        // Show the "Did you finish?" prompt if the current page equals the book length
+        if (currentPage === bookLength) {
+            didYouFinish.classList.remove("d-none");
+        } else {
+            didYouFinish.classList.add("d-none");
+        }
+    }
+
+    function closeFinishPrompt(bookId) {
+        const didYouFinish = document.getElementById(`didYouFinish-${bookId}`);
+        didYouFinish.classList.add("d-none");
+    }
+
+    function finishBook(bookId) {
+        const form = document.getElementById(`updateProgressForm-${bookId}`);
+        const currentPageInput = document.getElementById(`currentPage-${bookId}`);
+        currentPageInput.value = document.getElementById(`currentPage-${bookId}`).getAttribute('max');
+        form.action = '@Url.Action("FinishBook", "Home")'; // Redirect to FinishBook
+        form.submit();
+    }
+
+    function markAsDNF(bookId) {
+        const form = document.getElementById(`updateProgressForm-${bookId}`);
+        form.action = '@Url.Action("MarkAsDNF", "Home")'; // Redirect to MarkAsDNF
+        form.submit();
+    }
+
+    function submitProgress(bookId) {
+        const form = document.getElementById(`updateProgressForm-${bookId}`);
+        form.action = '@Url.Action("UpdateProgress", "Home")'; // Redirect to UpdateProgress
+        form.submit();
+    }
+
+    function addToJournal(userBookId, event) {
+        event.preventDefault();  // Prevent the form from submitting normally
+
+        // Send the AJAX request to the server
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("AddToJournal", "Home")',
+            data: { userBookId: userBookId },
+            success: function (response) {
+                // Display the message in the message container
+                var messageContainer = $('#message-container');
+                var alertMessage = $('#alert-message');
+
+                if (response.success) {
+                    // Success message
+                    alertMessage.text(response.message);
+                    messageContainer.removeClass('alert-danger').addClass('alert-success');
+                } else {
+                    // Error message
+                    alertMessage.text(response.message);
+                    messageContainer.removeClass('alert-success').addClass('alert-danger');
+                }
+
+                // Show the message container
+                messageContainer.show();
+            },
+            error: function () {
+                var messageContainer = $('#message-container');
+                var alertMessage = $('#alert-message');
+
+                // Error handling if AJAX request fails
+                alertMessage.text('An error occurred while adding the book to the journal.');
+                messageContainer.removeClass('alert-success').addClass('alert-danger');
+                messageContainer.show();
+            }
+        });
+    }
+</script>
+
+<style scoped>
+    main{
+        padding-top:6%%;
+    }
+
     .card {
         border: none;
         transition: transform 0.3s ease;

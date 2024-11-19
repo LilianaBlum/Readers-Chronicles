@@ -23,6 +23,11 @@ body {
 
 #main-container{
     height:90vh;
+    padding-top:7%;
+}
+
+main{
+    padding-bottom: 0px !important;
 }
 
 nav{
