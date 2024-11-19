@@ -1,0 +1,18 @@
+﻿namespace ReadersChronicle.Models
+{
+    public class BookJournalViewModel
+    {
+        public int JournalID { get; set; }
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public string Status { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string OverallImpression { get; set; }
+        public string Insights { get; set; }
+        public string AuthorsAim { get; set; }
+        public string Recommendation { get; set; }
+        public string AdditionalNotes { get; set; }
+        public string CoverImageBase64 { get; set; }
+    }
+}

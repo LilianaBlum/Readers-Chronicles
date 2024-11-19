@@ -227,5 +227,84 @@ namespace ReadersChronicle.Controllers
 
             return RedirectToAction("UserLibrary", new { status = "Dnf" });
         }
+
+        public async Task<IActionResult> BookJournal()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Fetch journal entries along with the related user book
+            var journalEntries = await _context.BookJournals
+                .Where(j => j.UserBook.UserID == userId)
+                .Include(j => j.UserBook)
+                .ToListAsync();
+
+            // Map the data model to ViewModel
+            var viewModel = journalEntries.Select(journal => new BookJournalViewModel
+            {
+                JournalID = journal.JournalID,
+                Title = journal.UserBook.Title,
+                Author = journal.UserBook.Author,
+                Status = journal.UserBook.Status,
+                StartDate = journal.StartDate,
+                EndDate = journal.EndDate,
+                OverallImpression = journal.OverallImpression,
+                Insights = journal.Insights,
+                AuthorsAim = journal.AuthorsAim,
+                Recommendation = journal.Recommendation,
+                AdditionalNotes = journal.AdditionalNotes,
+                CoverImageBase64 = Convert.ToBase64String(journal.UserBook.Picture)
+            }).ToList();
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddToJournal(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId &&
+                            (b.Status == "Finished" || b.Status == "Dnf"))
+                .FirstOrDefaultAsync();
+
+            if (userBook == null)
+            {
+                return NotFound();
+            }
+
+            // Check if the book is already in the journal
+            if (!_context.BookJournals.Any(j => j.UserBookID == userBookId))
+            {
+                var journalEntry = new BookJournal
+                {
+                    UserBookID = userBookId,
+                    StartDate = userBook.StartDate,
+                    EndDate = userBook.EndDate,
+                    OverallRating = null, // Allow user to update later
+                    OverallImpression = null,
+                    Insights = null,
+                    AuthorsAim = null,
+                    Recommendation = null,
+                    AdditionalNotes = null
+                };
+
+                _context.BookJournals.Add(journalEntry);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("BookJournal");
+        }
+
+        
     }
 }

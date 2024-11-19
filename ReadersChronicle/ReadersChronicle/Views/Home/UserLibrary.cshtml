@@ -44,6 +44,15 @@
                             Update Progress
                         </button>
                     }
+
+                    @if (book.Status == "Finished" || book.Status == "Dnf")
+                    {
+                        <!-- Add to Journal Button -->
+                        <form method="post" action="@Url.Action("AddToJournal", "Home")" class="mt-2">
+                            <input type="hidden" name="userBookId" value="@book.UserBookID" />
+                            <button type="submit" class="btn btn-success">Add to Journal</button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
