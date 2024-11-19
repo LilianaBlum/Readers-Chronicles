@@ -21,7 +21,27 @@
     </li>
 </ul>
 
+
+@{
+    var message = TempData["Message"] as string;
+}
+
+<!-- Show the message here as an alert -->
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info" id="message">
+        @message
+    </div>
+}
+
+<div id="message-container" class="container mt-4" style="display: none;">
+    <div class="alert" id="message-alert" role="alert">
+        <span id="alert-message"></span>
+    </div>
+</div>
+
 <div class="row">
+
     @foreach (var book in Model)
     {
         <div class="col-md-3 col-sm-6 mb-4 d-flex align-items-stretch">
@@ -48,7 +68,7 @@
                     @if (book.Status == "Finished" || book.Status == "Dnf")
                     {
                         <!-- Add to Journal Button -->
-                        <form method="post" action="@Url.Action("AddToJournal", "Home")" class="mt-2">
+                        <form method="post" action="@Url.Action("AddToJournal", "Home")" class="mt-2" onsubmit="addToJournal(@book.UserBookID, event)">
                             <input type="hidden" name="userBookId" value="@book.UserBookID" />
                             <button type="submit" class="btn btn-success">Add to Journal</button>
                         </form>
@@ -129,8 +149,9 @@
     }
 </div>
 
-<script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<script>
     function validatePageInput(bookId, bookLength) {
         const currentPageInput = document.getElementById(`currentPage-${bookId}`);
         const saveProgressBtn = document.getElementById(`saveProgressBtn-${bookId}`);
@@ -176,6 +197,44 @@
         const form = document.getElementById(`updateProgressForm-${bookId}`);
         form.action = '@Url.Action("UpdateProgress", "Home")'; // Redirect to UpdateProgress
         form.submit();
+    }
+
+    function addToJournal(userBookId, event) {
+        event.preventDefault();  // Prevent the form from submitting normally
+
+        // Send the AJAX request to the server
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("AddToJournal", "Home")',
+            data: { userBookId: userBookId },
+            success: function (response) {
+                // Display the message in the message container
+                var messageContainer = $('#message-container');
+                var alertMessage = $('#alert-message');
+
+                if (response.success) {
+                    // Success message
+                    alertMessage.text(response.message);
+                    messageContainer.removeClass('alert-danger').addClass('alert-success');
+                } else {
+                    // Error message
+                    alertMessage.text(response.message);
+                    messageContainer.removeClass('alert-success').addClass('alert-danger');
+                }
+
+                // Show the message container
+                messageContainer.show();
+            },
+            error: function () {
+                var messageContainer = $('#message-container');
+                var alertMessage = $('#alert-message');
+
+                // Error handling if AJAX request fails
+                alertMessage.text('An error occurred while adding the book to the journal.');
+                messageContainer.removeClass('alert-success').addClass('alert-danger');
+                messageContainer.show();
+            }
+        });
     }
 </script>
 

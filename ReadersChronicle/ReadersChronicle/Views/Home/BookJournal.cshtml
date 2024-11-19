@@ -1,4 +1,5 @@
-﻿@model List<ReadersChronicle.Models.BookJournalViewModel>
+﻿@using ReadersChronicle.Models
+@model List<BookJournalViewModel>
 
 <h2 class="mb-5">Book Journal</h2>
 
@@ -7,14 +8,19 @@
     {
         <div class="col-md-6 mb-4">
             <div class="card">
-                <img src="data:image/jpeg;base64,@Convert.ToBase64String(journal.UserBook.Picture)"
-                     alt="Book Cover" class="card-img-top" style="height: 250px; object-fit: cover;" />
                 <div class="card-body">
-                    <h5 class="card-title">@journal.UserBook.Title</h5>
-                    <p class="card-text"><strong>Author:</strong> @journal.UserBook.Author</p>
-                    <p class="card-text"><strong>Status:</strong> @journal.UserBook.Status</p>
+                    <h5 class="card-title">@journal.Title</h5>
                     <p class="card-text"><strong>Start Date:</strong> @journal.StartDate?.ToString("d")</p>
                     <p class="card-text"><strong>End Date:</strong> @journal.EndDate?.ToString("d")</p>
+
+                    @if (!string.IsNullOrEmpty(journal.CoverImageBase64))
+                    {
+                        <img src="data:image/jpeg;base64,@journal.CoverImageBase64" alt="@journal.Title" class="img-thumbnail" />
+                    }
+                    else
+                    {
+                        <p>No image available</p>
+                    }
 
                     @if (!string.IsNullOrEmpty(journal.OverallImpression))
                     {
@@ -33,4 +39,4 @@
             </div>
         </div>
     }
-    }
+</div>
