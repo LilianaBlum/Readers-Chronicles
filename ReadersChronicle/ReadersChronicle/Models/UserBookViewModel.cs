@@ -10,5 +10,6 @@ namespace ReadersChronicle.Models
         public int Length { get; set; }
         public string Status { get; set; }
         public string CoverImageBase64 { get; set; }
+        public int CurrentPage {  get; set; }
     }
 }

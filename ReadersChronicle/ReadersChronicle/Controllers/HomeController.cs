@@ -125,7 +125,8 @@ namespace ReadersChronicle.Controllers
                 Author = book.Author,
                 Length = book.Length,
                 Status = book.Status,
-                CoverImageBase64 = book.Picture != null ? Convert.ToBase64String(book.Picture) : null
+                CoverImageBase64 = book.Picture != null ? Convert.ToBase64String(book.Picture) : null,
+                CurrentPage = book.CurrentPage,
             }).ToList();
 
             return View(userBookViewModels);
@@ -146,11 +147,85 @@ namespace ReadersChronicle.Controllers
 
             if (userBook != null)
             {
+                if (newStatus == "CurrentlyReading")
+                {
+                    userBook.StartDate = DateTime.Now;
+                }
+
                 userBook.Status = newStatus;
                 await _context.SaveChangesAsync();
             }
 
             return RedirectToAction("UserLibrary", new { status = newStatus });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProgress(int userBookId, int currentPage)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                userBook.CurrentPage = currentPage;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = "CurrentlyReading" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FinishBook(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                userBook.Status = "Finished";
+                userBook.CurrentPage = userBook.Length;
+                userBook.EndDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = "Finished" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkAsDNF(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                userBook.Status = "Dnf";
+                userBook.EndDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("UserLibrary", new { status = "Dnf" });
         }
     }
 }
