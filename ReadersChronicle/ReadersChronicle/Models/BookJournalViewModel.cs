@@ -13,7 +13,7 @@ namespace ReadersChronicle.Models
 
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public string OverallImpression { get; set; }
+        public string? OverallImpression { get; set; }
         public string Insights { get; set; }
         public string AuthorsAim { get; set; }
         public string Recommendation { get; set; }

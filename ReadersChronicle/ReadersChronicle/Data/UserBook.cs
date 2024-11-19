@@ -35,7 +35,7 @@ namespace ReadersChronicle.Data
 
 
         public virtual User User { get; set; }
-        public virtual BookJournal BookJournal { get; set; }
+        //public virtual BookJournal BookJournal { get; set; }
     }
 
 }

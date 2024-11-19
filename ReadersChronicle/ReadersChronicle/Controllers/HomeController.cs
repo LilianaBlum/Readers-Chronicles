@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
@@ -141,17 +142,15 @@ namespace ReadersChronicle.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Fetch journal entries along with the related user book
             var journalEntries = await _context.BookJournals
-        .Where(j => j.UserBook.UserID == userId)  // Filter based on the UserID in UserBook
-        .Include(j => j.UserBook)  // Include the related UserBook data
+        .Where(j => j.UserBook.UserID == userId)
+        .Include(j => j.UserBook)
         .ToListAsync();
 
-            // Map the data model to ViewModel
             var viewModel = journalEntries.Select(journal => new BookJournalViewModel
             {
                 JournalID = journal.JournalID,
-                UserBook = journal.UserBook,  // Set the UserBook reference
+                UserBook = journal.UserBook,
                 StartDate = journal.StartDate,
                 EndDate = journal.EndDate,
                 OverallImpression = journal.OverallImpression,
@@ -282,7 +281,6 @@ namespace ReadersChronicle.Controllers
                 return Json(new { success = false, message = "Book not found or cannot be added to journal." });
             }
 
-            // Check if the book is already in the journal
             var existingJournalEntry = await _context.BookJournals
                 .FirstOrDefaultAsync(j => j.UserBookID == userBookId);
 
@@ -291,7 +289,6 @@ namespace ReadersChronicle.Controllers
                 return Json(new { success = false, message = "This book is already in your journal." });
             }
 
-            // Book is not in the journal, add it
             var journalEntry = new BookJournal
             {
                 UserBookID = userBookId,
@@ -311,5 +308,84 @@ namespace ReadersChronicle.Controllers
             return Json(new { success = true, message = "The book has been successfully added to your journal." });
         }
 
+        public async Task<IActionResult> EditJournal(int id)
+        {
+            var journal = await _context.BookJournals
+                .Where(j => j.JournalID == id)
+                .Select(j => new EditJournalViewModel
+                {
+                    JournalID = j.JournalID,
+                    UserBookID = j.UserBookID,
+                    Title = j.UserBook.Title,
+                    Author = j.UserBook.Author,
+                    StartDate = j.StartDate,
+                    EndDate = j.EndDate,
+                    OverallRating = j.OverallRating,
+                    OverallImpression = j.OverallImpression,
+                    Insights = j.Insights,
+                    AuthorsAim = j.AuthorsAim,
+                    Recommendation = j.Recommendation,
+                    AdditionalNotes = j.AdditionalNotes
+                })
+                .FirstOrDefaultAsync();
+
+            if (journal == null)
+            {
+                return NotFound();
+            }
+
+            return Json(journal);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveEditedJournal(EditJournalViewModel model)
+        {
+            try
+            {
+                var journal = await _context.BookJournals.FindAsync(model.JournalID);
+                if (journal != null)
+                {
+                    journal.StartDate = model.StartDate;
+                    journal.EndDate = model.EndDate;
+                    journal.OverallRating = model.OverallRating;
+                    journal.OverallImpression = string.IsNullOrEmpty(model.OverallImpression) ? string.Empty : model.OverallImpression;
+                    journal.Insights = string.IsNullOrEmpty(model.Insights) ? string.Empty : model.Insights;
+                    journal.AuthorsAim = string.IsNullOrEmpty(model.AuthorsAim) ? string.Empty : model.AuthorsAim;
+                    journal.Recommendation = string.IsNullOrEmpty(model.Recommendation) ? string.Empty : model.Recommendation;
+                    journal.AdditionalNotes = string.IsNullOrEmpty(model.AdditionalNotes) ? string.Empty : model.AdditionalNotes;
+
+                    await _context.SaveChangesAsync();
+
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var updatedJournalEntries = await _context.BookJournals
+                        .Where(j => j.UserBook.UserID == userId)
+                        .Include(j => j.UserBook)
+                        .ToListAsync();
+
+                    var viewModel = updatedJournalEntries.Select(journal => new BookJournalViewModel
+                    {
+                        JournalID = journal.JournalID,
+                        UserBook = journal.UserBook,
+                        StartDate = journal.StartDate,
+                        EndDate = journal.EndDate,
+                        OverallImpression = journal.OverallImpression,
+                        Insights = journal.Insights,
+                        AuthorsAim = journal.AuthorsAim,
+                        Recommendation = journal.Recommendation,
+                        AdditionalNotes = journal.AdditionalNotes
+                    }).ToList();
+
+                    return Json(new { success = true, updatedJournalEntries = viewModel });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Journal not found." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
