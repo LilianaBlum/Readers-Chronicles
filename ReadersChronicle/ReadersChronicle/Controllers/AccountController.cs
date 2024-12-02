@@ -42,37 +42,26 @@ namespace ReadersChronicle.Controllers
                 return View(model);
             }
 
-            var token = await _userService.LoginUser(model);
+            var (isSuccess, message) = await _userService.LoginAsync(model);
 
-            if (token == null)
-            {
-                ModelState.AddModelError(string.Empty, "Invalid username or password.");
-                return View(model);
-            }
+        if (isSuccess)
+        {
+            TempData["SuccessMessage"] = "Login successful!";
+            return RedirectToAction("Index", "Home");
+        }
 
-            var user = await _userManager.FindByNameAsync(model.UserName);
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "Login successful!";
-                return RedirectToAction("Index", "Home");
-            }
-
-            ModelState.AddModelError(string.Empty, "Invalid username or password.");
-            return View(model);
+        ModelState.AddModelError(string.Empty, message);
+        return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            Response.Cookies.Delete("AuthToken");
-
-            await _signInManager.SignOutAsync();
-
+            await _userService.LogoutAsync();
             return RedirectToAction("Index", "Home");
         }
+
 
         [HttpGet]
         public IActionResult Register()
@@ -83,50 +72,20 @@ namespace ReadersChronicle.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                if (!await _userService.IsUsernameUniqueAsync(model.UserName))
-                {
-                    return BadRequest(new { message = "Username is already taken" });
-                }
-
-                if (!await _userService.IsEmailUniqueAsync(model.Email))
-                {
-                    return BadRequest(new { message = "Email is already taken" });
-                }
-
-                var user = new User
-                {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                    SecurityQuestion = model.SecurityQuestion,
-                    SecurityAnswerHash = new PasswordHasher<User>().HashPassword(null, model.SecurityAnswer)
-                };
-
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    await _userService.CreateUserProfile(user.UserName);
-
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine($"Error: {error.Description}");
-                    }
-                }
+                return View(model);
             }
 
+            var (isSuccess, message) = await _userService.RegisterAsync(model);
+
+            if (isSuccess)
+            {
+                TempData["SuccessMessage"] = "Registration successful!";
+                return RedirectToAction("Index", "Home");
+            }
+
+            ModelState.AddModelError(string.Empty, message);
             return View(model);
         }
 
@@ -261,81 +220,45 @@ namespace ReadersChronicle.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProfile(EditProfileViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
+                return View(model);
+            }
 
-                var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
-                if (profile == null)
-                {
-                    return RedirectToAction("CreateProfile");
-                }
+            var (isSuccess, message) = await _userService.EditUserProfileAsync(User, model);
 
-                user.UserName = model.UserName;
-                user.Email = model.Email;
-                profile.Bio = model.Bio;
-
-                var result = await _userManager.UpdateAsync(user);
-                if (!result.Succeeded)
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                    return View(model);
-                }
-
-                await _context.SaveChangesAsync();
+            if (isSuccess)
+            {
                 TempData["SuccessMessage"] = "Profile updated successfully!";
                 return RedirectToAction("Profile");
             }
 
+            ModelState.AddModelError(string.Empty, message);
             return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeProfileImage(IFormFile ProfileImage)
         {
-            if (ProfileImage != null && ProfileImage.Length > 0)
+            if (ProfileImage == null || ProfileImage.Length <= 0)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
+                ModelState.AddModelError(string.Empty, "Please select a valid profile image.");
+                return RedirectToAction("Profile");
+            }
 
-                var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
-                if (profile == null)
-                {
-                    profile = new Profile
-                    {
-                        UserID = user.Id
-                    };
-                    _context.Profiles.Add(profile);
-                }
+            var (isSuccess, message) = await _userService.ChangeUserProfileImageAsync(User, ProfileImage);
 
-                using (var memoryStream = new MemoryStream())
-                {
-                    await ProfileImage.CopyToAsync(memoryStream);
-                    profile.ImageData = memoryStream.ToArray();
-                    profile.ImageMimeType = ProfileImage.ContentType;
-                }
-
-                await _context.SaveChangesAsync();
-
+            if (isSuccess)
+            {
                 TempData["SuccessMessage"] = "Profile image updated successfully!";
                 return RedirectToAction("Profile");
             }
 
-            ModelState.AddModelError(string.Empty, "Please select a valid profile image.");
+            ModelState.AddModelError(string.Empty, message);
             return RedirectToAction("Profile");
         }
-
 
         public async Task<IActionResult> ChangePassword()
         {
@@ -356,36 +279,16 @@ namespace ReadersChronicle.Controllers
                 return View(model);
             }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            var (isSuccess, message) = await _userService.DeleteUserAccountAsync(User, model.Password);
+
+            if (isSuccess)
             {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("Profile");
+                TempData["SuccessMessage"] = "Your profile has been deleted successfully.";
+                return RedirectToAction("Index", "Home");
             }
 
-            var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-            if (!passwordValid)
-            {
-                ModelState.AddModelError(string.Empty, "Incorrect password.");
-                return View(model);
-            }
-
-            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user.Id);
-            if (profile != null)
-            {
-                _context.Profiles.Remove(profile);
-            }
-
-            var result = await _userManager.DeleteAsync(user);
-            if (!result.Succeeded)
-            {
-                TempData["ErrorMessage"] = "Error deleting user account.";
-                return RedirectToAction("Profile");
-            }
-
-            await _signInManager.SignOutAsync();
-            TempData["SuccessMessage"] = "Your profile has been deleted successfully.";
-            return RedirectToAction("Index", "Home");
+            TempData["ErrorMessage"] = message;
+            return RedirectToAction("Profile");
         }
     }
 }
