@@ -120,7 +120,6 @@ namespace ReadersChronicle.Services
             return (false, errors);
         }
 
-
         public async Task CreateUserProfile(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
