@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadersChronicle", "ReadersChronicle\ReadersChronicle.csproj", "{559F9EB9-5E97-416E-94A7-AEAFC369C9D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadersChronicle", "ReadersChronicle\ReadersChronicle.csproj", "{559F9EB9-5E97-416E-94A7-AEAFC369C9D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadersChronicleTest", "ReadersChronicleTest\ReadersChronicleTest.csproj", "{766A20A1-1A06-455A-84D2-06E83753C836}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{559F9EB9-5E97-416E-94A7-AEAFC369C9D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{559F9EB9-5E97-416E-94A7-AEAFC369C9D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{559F9EB9-5E97-416E-94A7-AEAFC369C9D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{766A20A1-1A06-455A-84D2-06E83753C836}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{766A20A1-1A06-455A-84D2-06E83753C836}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{766A20A1-1A06-455A-84D2-06E83753C836}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{766A20A1-1A06-455A-84D2-06E83753C836}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

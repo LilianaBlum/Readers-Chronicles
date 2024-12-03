@@ -36,14 +36,14 @@ namespace ReadersChronicle.Services
 
         public async Task<bool> IsEmailUniqueAsync(string email)
         {
-            var user = _context.Users.Where(user => user.UserName.Equals(email)).FirstOrDefault();
+            var user = _context.Users.Where(user => user.Email.Equals(email)).FirstOrDefault();
             return user == null;
         }
 
 
         public async Task<(bool IsSuccess, string Message)> LoginAsync(LoginViewModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
+            var user = _context.Users.Where(user => user.UserName.Equals(model.UserName)).FirstOrDefault();
 
             if (user == null)
             {
