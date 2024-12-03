@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using System.Runtime.Intrinsics.X86;
 
 namespace ReadersChronicleTest
 {
@@ -573,5 +575,201 @@ namespace ReadersChronicleTest
             var verificationResult = passwordHasher.VerifyHashedPassword(null, updatedUser.PasswordHash, newPassword);
             Assert.AreEqual(PasswordVerificationResult.Success, verificationResult, "The password hash should match the new password.");
         }
+
+        [TestMethod]
+        public async Task EditUserProfileAsync_ReturnsSuccess_WhenProfileIsUpdated()
+        {
+            // Arrange
+            var userId = Guid.NewGuid().ToString();
+
+            var user1 = new User
+            {
+                Id = userId,
+                UserName = "existingUser1",
+                Email = "existingUser@example.com",
+                SecurityQuestion = "What is your pet's name?",
+                SecurityAnswerHash = "Bingo"
+            };
+
+
+            _context.Users.Add(user1);
+            await _context.SaveChangesAsync();
+
+            var profilePicturePath = Path.Combine("wwwroot", "Common", "profile-picture.png");
+            Directory.CreateDirectory(Path.GetDirectoryName(profilePicturePath));
+            File.WriteAllBytes(profilePicturePath, new byte[] { 1, 2, 3 });
+
+            Mock.Get(_userManager)
+                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+                .ReturnsAsync(user1);
+
+            Mock.Get(_userManager)
+            .Setup(um => um.UpdateAsync(It.IsAny<User>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+            Mock.Get(_userManager)
+            .Setup(um => um.FindByIdAsync(user1.Id))
+            .ReturnsAsync(user1);
+
+            // Act
+            await _userService.CreateUserProfile(user1.UserName);
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId)
+            }));
+
+            var model = new EditProfileViewModel
+            {
+                UserName = "newUserName",
+                Email = "newEmail@example.com",
+                Bio = "Updated bio"
+            };
+
+            // Act
+            var result = await _userService.EditUserProfileAsync(claimsPrincipal, model);
+
+            // Assert
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual("Profile updated successfully.", result.Message);
+
+            var updatedUser = await _userManager.FindByIdAsync(user1.Id);
+            Assert.AreEqual("newUserName", updatedUser.UserName);
+            Assert.AreEqual("newEmail@example.com", updatedUser.Email);
+
+            var updatedProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserID == user1.Id);
+            Assert.AreEqual("Updated bio", updatedProfile.Bio);
+        }
+
+        [TestMethod]
+        public async Task EditUserProfileAsync_ReturnsFailure_WhenUserNotFound()
+        {
+            // Arrange
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()) // Nonexistent user ID
+            }));
+
+            var model = new EditProfileViewModel
+            {
+                UserName = "newUserName",
+                Email = "newEmail@example.com",
+                Bio = "Updated bio"
+            };
+
+            // Act
+            var result = await _userService.EditUserProfileAsync(claimsPrincipal, model);
+
+            // Assert
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("User not found. Please log in again.", result.Message);
+        }
+
+        [TestMethod]
+        public async Task EditUserProfileAsync_ReturnsFailure_WhenProfileNotFound()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            var user = new User
+            {
+                Id = userId.ToString(),
+                UserName = "existingUser1",
+                Email = "existingUser@example.com",
+                SecurityQuestion = "This is question",
+                SecurityAnswerHash = "This is answer"
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+            }));
+
+            var model = new EditProfileViewModel
+            {
+                UserName = "newUserName",
+                Email = "newEmail@example.com",
+                Bio = "Updated bio"
+            };
+
+            Mock.Get(_userManager)
+                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+                .ReturnsAsync(user);
+
+            Mock.Get(_userManager)
+            .Setup(um => um.UpdateAsync(It.IsAny<User>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+            Mock.Get(_userManager)
+            .Setup(um => um.FindByIdAsync(user.Id))
+            .ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.EditUserProfileAsync(claimsPrincipal, model);
+
+            // Assert
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("Profile not found. Please create a profile first.", result.Message);
+        }
+
+        [TestMethod]
+        public async Task EditUserProfileAsync_ReturnsFailure_WhenUserUpdateFails()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            var user = new User
+            {
+                Id = userId.ToString(),
+                UserName = "existingUser",
+                Email = "existingUser@example.com",
+                SecurityQuestion = "This is question",
+                SecurityAnswerHash = "This is answer"
+            };
+
+            var profile = new Profile
+            {
+                UserID = userId.ToString(),
+                Bio = "Old bio",
+                ImageData = new byte[] {1,2,3},
+                ImageMimeType = "image/png"
+            };
+
+            _context.Users.Add(user);
+            _context.Profiles.Add(profile);
+            await _context.SaveChangesAsync();
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+            }));
+
+            var model = new EditProfileViewModel
+            {
+                UserName = "invalidUserName!", // Simulate invalid data
+                Email = "newEmail@example.com",
+                Bio = "Updated bio",
+            };
+
+            var mockUserManager = Mock.Get(_userManager);
+            mockUserManager
+                .Setup(m => m.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid username." }));
+
+            Mock.Get(_userManager)
+                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+                .ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.EditUserProfileAsync(claimsPrincipal, model);
+
+            // Assert
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("Error updating user: Invalid username.", result.Message);
+        }
+
     }
 }
