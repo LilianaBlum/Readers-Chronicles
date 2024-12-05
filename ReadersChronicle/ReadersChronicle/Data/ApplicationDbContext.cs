@@ -13,6 +13,7 @@ namespace ReadersChronicle.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<UserBook> UserBooks { get; set; }
+        public DbSet<Article> Articles { get; set; }
         public DbSet<BookJournal> BookJournals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

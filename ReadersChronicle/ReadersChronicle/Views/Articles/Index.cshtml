@@ -1,0 +1,114 @@
+﻿@model ReadersChronicle.Models.ArticlesIndexViewModel
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="container mt-4">
+    <!-- Navigation -->
+    <ul class="navbar-nav mb-4" style="width: 100%; display: flex; flex-direction: row; gap: 20px;">
+        <li class="nav-item">
+            <a class="fw-bold nav-link text-decoration-underline @(ViewData["ViewType"] as string == "All" ? "text-primary" : "text-secondary")"
+               asp-controller="Articles" asp-action="Index" asp-route-viewType="All">All Articles</a>
+        </li>
+        <li class="nav-item">
+            <a class="fw-bold nav-link text-decoration-underline @(ViewData["ViewType"] as string == "My" ? "text-primary" : "text-secondary")"
+               asp-controller="Articles" asp-action="Index" asp-route-viewType="My">My Articles</a>
+        </li>
+        <li class="nav-item ms-auto">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createArticleModal">Add Article</button>
+        </li>
+    </ul>
+
+    <!-- Articles -->
+    <h1>Articles</h1>
+    <div class="row">
+        @foreach (var article in Model.Articles)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img class="card-img-top" src="data:@article.PictureMimeType;base64,@Convert.ToBase64String(article.Picture)" alt="Article Picture" />
+                    <div class="card-body">
+                        <h5 class="card-title">@article.Title</h5>
+                        <p class="card-text">@article.Description</p>
+                        <small class="text-muted">By @article.User.UserName on @article.TimeCreated.ToShortDateString()</small>
+
+                        @if (ViewData["ViewType"] as string == "My")
+                        {
+                            <form asp-action="Delete" method="post" class="mt-2">
+                                <input type="hidden" name="id" value="@article.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Modal for Creating Articles -->
+    <div class="modal fade mt-5" id="createArticleModal" tabindex="-1" aria-labelledby="createArticleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createArticleModalLabel">Create an Article</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form asp-action="Create" method="post">
+                        <div class="form-group mb-3">
+                            <label for="UserBookID">Choose a Book:</label>
+                            <select class="form-control" id="UserBookID" name="UserBookID" required>
+                                <option value="" disabled selected>Select a book...</option>
+                                @foreach (var book in Model.UserBooks)
+                                {
+                                    <option value="@book.UserBookID">@book.Title by @book.Author</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Title">Title</label>
+                            <input type="text" class="form-control" id="Title" name="Title" required />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="Description">Description</label>
+                            <textarea class="form-control" id="Description" name="Description" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Create Article</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<style>
+    .card {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        max-width: 300px;
+        overflow: hidden;
+    }
+
+    .card-img-top {
+        height: 400px;
+        object-fit: cover;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    textarea {
+        resize: none;
+    }
+
+</style>
