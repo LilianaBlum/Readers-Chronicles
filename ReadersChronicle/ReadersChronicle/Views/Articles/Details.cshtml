@@ -12,9 +12,12 @@
             <p class="mt-4">@Model.Description</p>
         </div>
         <div class="col-md-4">
-            <form asp-action="Like" asp-route-id="@Model.Id" method="post">
-                <button type="submit" class="btn btn-success btn-block">Like</button>
+            <form asp-action="Like" asp-route-id="@Model.Id" method="post" class="d-inline">
+                <button type="submit" class="btn @(Model.UserLiked ? "btn-danger" : "btn-success")">
+                    @(Model.UserLiked ? "Unlike" : "Like")
+                </button>
             </form>
+            <span class="ms-2">Likes: @Model.TotalLikes</span>
 
             <hr />
 

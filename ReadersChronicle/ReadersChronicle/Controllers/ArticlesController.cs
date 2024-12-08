@@ -117,8 +117,16 @@ public class ArticlesController : Controller
 
         if (article == null)
         {
-            return NotFound("Article not found.");
+            return NotFound();
         }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var userLiked = await _context.ArticleRatings
+            .AnyAsync(r => r.ArticleId == id && r.UserId == userId);
+
+        var totalLikes = await _context.ArticleRatings
+            .CountAsync(r => r.ArticleId == id);
 
         var viewModel = new ArticleDetailsViewModel
         {
@@ -128,11 +136,14 @@ public class ArticlesController : Controller
             Picture = article.Picture,
             PictureMimeType = article.PictureMimeType,
             UserName = article.User.UserName,
-            TimeCreated = article.TimeCreated
+            TimeCreated = article.TimeCreated,
+            TotalLikes = totalLikes,
+            UserLiked = userLiked // Add this property
         };
 
         return View(viewModel);
     }
+
 
     public async Task<IActionResult> Edit(int id)
     {
@@ -175,5 +186,36 @@ public class ArticlesController : Controller
 
         return RedirectToAction(nameof(Index), new { viewType = "My" });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Like(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // Check if the user has already liked this article
+        var existingLike = await _context.ArticleRatings
+            .FirstOrDefaultAsync(r => r.ArticleId == id && r.UserId == userId);
+
+        if (existingLike != null)
+        {
+            // User already liked the article; remove the like
+            _context.ArticleRatings.Remove(existingLike);
+        }
+        else
+        {
+            // User hasn't liked the article yet; add the like
+            var like = new ArticleRating
+            {
+                ArticleId = id,
+                UserId = userId
+            };
+            _context.ArticleRatings.Add(like);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
 
 }

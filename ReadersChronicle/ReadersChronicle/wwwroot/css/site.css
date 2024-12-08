@@ -40,3 +40,16 @@ nav{
     font-size:18px;
     margin-top:2px;
 }
+
+.navbar-nav .nav-link {
+    font-size: 1rem; /* Smaller font size */
+}
+
+.navbar-brand {
+    font-size: 1rem; /* Slightly larger for the brand */
+}
+
+#logout-button{
+    font-size: 1rem;
+    margin-top: 0px;
+}

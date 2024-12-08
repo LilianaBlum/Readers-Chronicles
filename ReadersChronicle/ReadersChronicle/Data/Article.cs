@@ -10,6 +10,7 @@
         public byte[] Picture { get; set; }
 
         public string PictureMimeType { get; set; }
+        public virtual ICollection<ArticleRating> ArticleRatings { get; set; }
         public virtual User User { get; set; }
     }
 }

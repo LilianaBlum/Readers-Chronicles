@@ -9,6 +9,7 @@
         public string PictureMimeType { get; set; }
         public string UserName { get; set; }
         public DateTime TimeCreated { get; set; }
+        public int TotalLikes { get; set; }
+        public bool UserLiked { get; set; }
     }
-
 }

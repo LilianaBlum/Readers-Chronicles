@@ -15,6 +15,7 @@ namespace ReadersChronicle.Data
         public DbSet<UserBook> UserBooks { get; set; }
         public DbSet<Article> Articles { get; set; }
         public DbSet<BookJournal> BookJournals { get; set; }
+        public DbSet<ArticleRating> ArticleRatings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,18 @@ namespace ReadersChronicle.Data
         .OnDelete(DeleteBehavior.Restrict); // Configure deletion behavior as needed
 
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ArticleRating>()
+            .HasOne(ar => ar.Article)
+            .WithMany(a => a.ArticleRatings) // Add navigation property to Article model
+            .HasForeignKey(ar => ar.ArticleId)
+            .OnDelete(DeleteBehavior.Cascade); // Retain cascade here
+
+            modelBuilder.Entity<ArticleRating>()
+                .HasOne(ar => ar.User)
+                .WithMany() // No navigation property for User model
+                .HasForeignKey(ar => ar.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete here
         }
     }
 }
