@@ -1,14 +1,11 @@
-using Azure.Identity;
 using Jose;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
-using System.Net.NetworkInformation;
 
 namespace ReadersChronicle.Controllers
 {

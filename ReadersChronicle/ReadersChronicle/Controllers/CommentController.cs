@@ -1,58 +1,59 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ReadersChronicle.Data;
+using ReadersChronicle.Services;
 using System.Security.Claims;
 
 namespace ReadersChronicle.Controllers
 {
     public class CommentController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly CommentService _commentService;
         private readonly UserManager<User> _userManager;
 
-        public CommentController(ApplicationDbContext context, UserManager<User> userManager)
+        public CommentController(CommentService commentService, UserManager<User> userManager)
         {
-            _context = context;
+            _commentService = commentService;
             _userManager = userManager;
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Delete(int commentId)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var comment = await _context.Comments.FindAsync(commentId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (comment == null || comment.UserId != user.Id)
+            if (userId == null)
             {
-                return Unauthorized(); // Prevent unauthorized users from deleting other users' comments
+                return RedirectToAction("Login", "Account");
             }
 
-            _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
+            var success = await _commentService.DeleteCommentAsync(commentId, userId);
 
-            return RedirectToAction("Details", "Articles", new { id = comment.ArticleId });
+            if (!success)
+            {
+                return Unauthorized();
+            }
+
+            return RedirectToAction("Details", "Articles", new { id = commentId });
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int commentId)
         {
-            var comment = await _context.Comments
-                .FirstOrDefaultAsync(c => c.CommentId == commentId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (comment == null)
+            if (userId == null)
             {
-                return NotFound();
+                return RedirectToAction("Login", "Account");
             }
 
-            // Check if the logged-in user is the one who wrote the comment
-            if (comment.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            var comment = await _commentService.GetCommentForEditAsync(commentId, userId);
+
+            if (comment == null)
             {
                 return Unauthorized();
             }
 
-            // Pass the comment to the view
             return View(comment);
         }
 
@@ -60,27 +61,21 @@ namespace ReadersChronicle.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int commentId, string description)
         {
-            var comment = await _context.Comments
-                .FirstOrDefaultAsync(c => c.CommentId == commentId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (comment == null)
+            if (userId == null)
             {
-                return NotFound();
+                return RedirectToAction("Login", "Account");
             }
 
-            // Check if the logged-in user is the one who wrote the comment
-            if (comment.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            var success = await _commentService.UpdateCommentAsync(commentId, description, userId);
+
+            if (!success)
             {
                 return Unauthorized();
             }
 
-            // Update the comment
-            comment.Description = description;
-
-            await _context.SaveChangesAsync();
-
-            // Redirect back to the article details page
-            return RedirectToAction("Details", "Articles", new { id = comment.ArticleId });
+            return RedirectToAction("Details", "Articles", new { id = commentId });
         }
     }
 }

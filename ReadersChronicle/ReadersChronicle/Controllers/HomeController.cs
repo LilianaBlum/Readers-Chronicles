@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
