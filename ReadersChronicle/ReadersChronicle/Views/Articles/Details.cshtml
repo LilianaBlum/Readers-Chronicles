@@ -13,7 +13,7 @@
         </div>
         <div class="col-md-4">
             <form asp-action="Like" asp-route-id="@Model.Id" method="post" class="d-inline">
-                <button type="submit" class="btn @(Model.UserLiked ? "btn-danger" : "btn-success")">
+                <button type="submit" class="btn article-like-button" style="background-color: @(Model.UserLiked ? "#ff5e5e" : "#ccc"); color: white;">
                     @(Model.UserLiked ? "Unlike" : "Like")
                 </button>
             </form>
@@ -23,9 +23,169 @@
 
             <h3>Comments</h3>
             <div id="comments-section">
-                <!-- Template for future comments functionality -->
-                <p>No comments yet. Be the first to comment!</p>
+                <form asp-action="AddComment" method="post">
+                    <input type="hidden" name="articleId" value="@Model.Article.Id" />
+                    <div class="comment-section">
+                        <div class="comment-input">
+                            <textarea name="description" placeholder="Add a comment..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn post-comment-btn">Post</button>
+                    </div>
+                </form>
+                @foreach (var comment in Model.Comments)
+                {
+                    <div class="comment">
+                        <div class="row">
+                            <div class="col-md-9 d-flex">
+                                <p style="word-break: break-all;"><strong>@comment.User.UserName:</strong> @comment.Description</p>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="row d-flex text-align-center">
+                                    <form asp-action="LikeComment" method="post" asp-route-commentId="@comment.CommentId">
+                                        <button type="submit" class="like-btn @((Model.UserLikedComments.Any(cr => cr.CommentId == comment.CommentId)) ? "liked" : "")">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </form>
+
+                                    <span class="like-count">
+                                        Likes: @Model.UserLikedComments.Count(cr => cr.CommentId == comment.CommentId)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+
+<script scoped>
+    function formatLikeCount(count) {
+        if (count >= 1000) {
+            return (count / 1000).toFixed(1) + 'k';
+        }
+        return count;
+    }
+
+    document.querySelectorAll('.like-count').forEach(function (element) {
+        var count = parseInt(element.textContent.replace('Likes: ', '').trim());
+        element.textContent = 'Likes: ' + formatLikeCount(count);
+    });
+</script>
+
+<style scoped>
+    img{
+        width:200px;
+    }
+
+    .comment-section {
+        display: flex;
+        margin-top:20px;
+        align-items: center;
+        border-top: 1px solid #ccc;
+        padding: 10px 0;
+        width: 100%;
+    }
+
+    .comment-input {
+        flex-grow: 1;
+    }
+
+        .comment-input textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+            .comment-input textarea:focus {
+                outline: none;
+                border-color: #007bff;
+            }
+
+    .post-comment-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 6px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: 10px;
+        transition: background-color 0.2s;
+    }
+
+        .post-comment-btn:hover {
+            background-color: #0056b3;
+            color: white;
+            font-weight:bold;
+        }
+
+        .post-comment-btn:focus {
+            outline: none;
+        }
+
+    .comment {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .comment .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .comment .col-md-8 {
+        flex-grow: 1;
+    }
+
+    .comment .col-md-4 {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .like-btn {
+        background: none;
+        border: none;
+        color: #ccc;
+        font-size: 20px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .like-btn:hover {
+            color: #e04d83;
+    }
+
+    .like-btn.liked {
+        color: #ff5e5e;
+    }
+
+    .like-count {
+        text-align:center;
+        font-size: 14px;
+        color: #555;
+    }
+
+    #comments-section > div > div > div.col-md-3 > div > form{
+        text-align: center;
+    }
+
+    .article-like-button:hover{
+        background-color: #e04d83 !important;
+        font-weight: bold;
+    }
+
+</style>

@@ -128,6 +128,15 @@ public class ArticlesController : Controller
         var totalLikes = await _context.ArticleRatings
             .CountAsync(r => r.ArticleId == id);
 
+        var comments = await _context.Comments
+            .Include(c => c.User)
+            .Where(c => c.ArticleId == id)
+            .ToListAsync();
+
+        var userLikedComments = await _context.CommentRatings
+            .Where(cr => cr.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            .ToListAsync();
+
         var viewModel = new ArticleDetailsViewModel
         {
             Id = article.Id,
@@ -138,7 +147,10 @@ public class ArticlesController : Controller
             UserName = article.User.UserName,
             TimeCreated = article.TimeCreated,
             TotalLikes = totalLikes,
-            UserLiked = userLiked // Add this property
+            UserLiked = userLiked,
+            Article = article,
+            Comments = comments,
+            UserLikedComments = userLikedComments
         };
 
         return View(viewModel);
@@ -192,18 +204,15 @@ public class ArticlesController : Controller
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Check if the user has already liked this article
         var existingLike = await _context.ArticleRatings
             .FirstOrDefaultAsync(r => r.ArticleId == id && r.UserId == userId);
 
         if (existingLike != null)
         {
-            // User already liked the article; remove the like
             _context.ArticleRatings.Remove(existingLike);
         }
         else
         {
-            // User hasn't liked the article yet; add the like
             var like = new ArticleRating
             {
                 ArticleId = id,
@@ -217,5 +226,64 @@ public class ArticlesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> AddComment(int articleId, string description)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
 
+        var comment = new Comment
+        {
+            ArticleId = articleId,
+            UserId = user.Id,
+            Description = description,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.Comments.Add(comment);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = articleId });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> LikeComment(int commentId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var comment = await _context.Comments.FindAsync(commentId);
+        if (comment == null)
+        {
+            return NotFound();
+        }
+
+        var existingRating = await _context.CommentRatings
+            .FirstOrDefaultAsync(cr => cr.CommentId == commentId && cr.UserId == user.Id);
+
+        if (existingRating == null)
+        {
+            var commentRating = new CommentRating
+            {
+                CommentId = commentId,
+                UserId = user.Id
+            };
+
+            _context.CommentRatings.Add(commentRating);
+        }
+        else
+        {
+            _context.CommentRatings.Remove(existingRating);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = comment.ArticleId });
+    }
 }

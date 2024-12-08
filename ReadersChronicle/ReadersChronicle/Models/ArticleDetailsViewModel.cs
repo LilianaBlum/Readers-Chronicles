@@ -1,4 +1,6 @@
-﻿namespace ReadersChronicle.Models
+﻿using ReadersChronicle.Data;
+
+namespace ReadersChronicle.Models
 {
     public class ArticleDetailsViewModel
     {
@@ -11,5 +13,8 @@
         public DateTime TimeCreated { get; set; }
         public int TotalLikes { get; set; }
         public bool UserLiked { get; set; }
+        public Article Article { get; set; }
+        public List<Comment> Comments { get; set; }
+        public List<CommentRating> UserLikedComments { get; set; }
     }
 }
