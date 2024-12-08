@@ -1,4 +1,5 @@
 ﻿@model ReadersChronicle.Models.ArticleDetailsViewModel
+@using System.Security.Claims
 
 <div class="container mt-4">
     <div class="row mb-5 ms-1">
@@ -34,23 +35,41 @@
                 </form>
                 @foreach (var comment in Model.Comments)
                 {
-                    <div class="comment">
+                    <div class="comment ps-0 pe-0">
                         <div class="row">
                             <div class="col-md-9 d-flex">
                                 <p style="word-break: break-all;"><strong>@comment.User.UserName:</strong> @comment.Description</p>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="row d-flex text-align-center">
-                                    <form asp-action="LikeComment" method="post" asp-route-commentId="@comment.CommentId">
-                                        <button type="submit" class="like-btn @((Model.UserLikedComments.Any(cr => cr.CommentId == comment.CommentId)) ? "liked" : "")">
-                                            <i class="fas fa-heart"></i>
-                                        </button>
-                                    </form>
+                                    <div>
+                                        <form asp-action="LikeComment" method="post" asp-route-commentId="@comment.CommentId">
+                                            <button type="submit" class="like-btn @((Model.UserLikedComments.Any(cr => cr.CommentId == comment.CommentId)) ? "liked" : "")">
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+                                        </form>
 
-                                    <span class="like-count">
-                                        Likes: @Model.UserLikedComments.Count(cr => cr.CommentId == comment.CommentId)
-                                    </span>
+                                        <span class="like-count">
+                                            Likes: @Model.UserLikedComments.Count(cr => cr.CommentId == comment.CommentId)
+                                        </span>
+                                    </div>
                                 </div>
+                            </div>
+                            <div class="col-md-1 pa-0">
+                                @if (comment.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                                {
+                                    <button class="btn btn-options" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="@Url.Action("Edit", "Comment", new { commentId = comment.CommentId })">Edit</a></li>
+                                        <li>
+                                            <form asp-action="Delete" asp-controller="Comment" method="post" asp-route-commentId="@comment.CommentId">
+                                                <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                }
                             </div>
                         </div>
                     </div>
@@ -188,4 +207,49 @@
         font-weight: bold;
     }
 
+    .comment-options {
+        position: relative;
+        display: inline-block;
+    }
+
+        .comment-options .btn-options {
+            background: transparent;
+            border: none;
+            color: #333;
+            font-size: 18px;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .comment-options .dropdown-menu {
+            position: absolute;
+            right: 0;
+            min-width: 120px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 5px 0;
+        }
+
+        .comment-options .dropdown-item {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+            .comment-options .dropdown-item:hover {
+                background-color: #f0f0f0;
+            }
+
+            .comment-options .dropdown-item.text-danger {
+                color: red;
+            }
+
+                .comment-options .dropdown-item.text-danger:hover {
+                    background-color: #ffdddd;
+                }
+
+
+    #comments-section > div > div > div.col-md-2 > div{
+        text-align:center !important;
+    }
 </style>
