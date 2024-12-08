@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 [Authorize]
 public class ArticlesController : Controller
@@ -106,6 +104,73 @@ public class ArticlesController : Controller
 
         // Remove the article
         _context.Articles.Remove(article);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index), new { viewType = "My" });
+    }
+
+    public async Task<IActionResult> Details(int id)
+    {
+        var article = await _context.Articles
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (article == null)
+        {
+            return NotFound("Article not found.");
+        }
+
+        var viewModel = new ArticleDetailsViewModel
+        {
+            Id = article.Id,
+            Title = article.Title,
+            Description = article.Description,
+            Picture = article.Picture,
+            PictureMimeType = article.PictureMimeType,
+            UserName = article.User.UserName,
+            TimeCreated = article.TimeCreated
+        };
+
+        return View(viewModel);
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var article = await _context.Articles.FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (article == null)
+        {
+            return NotFound("Article not found or you do not have permission to edit this article.");
+        }
+
+        var viewModel = new EditArticleViewModel
+        {
+            Id = article.Id,
+            Description = article.Description
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(EditArticleViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var article = await _context.Articles.FirstOrDefaultAsync(a => a.Id == model.Id && a.UserId == userId);
+
+        if (article == null)
+        {
+            return NotFound("Article not found or you do not have permission to edit this article.");
+        }
+
+        article.Description = model.Description;
         await _context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index), new { viewType = "My" });

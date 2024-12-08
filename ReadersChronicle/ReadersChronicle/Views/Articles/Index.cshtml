@@ -31,25 +31,28 @@
     <div class="row">
         @foreach (var article in Model.Articles)
         {
-            <div class="col-md-3 mb-4">
+            <div class="col-md-4 mb-4">
                 <div class="card">
                     <img class="card-img-top" src="data:@article.PictureMimeType;base64,@Convert.ToBase64String(article.Picture)" alt="Article Picture" />
                     <div class="card-body">
                         <h5 class="card-title">@article.Title</h5>
-                        <p class="card-text">@article.Description</p>
+                        <p class="card-text">@article.Description.Substring(0, Math.Min(50, article.Description.Length))...</p>
                         <small class="text-muted">By @article.User.UserName on @article.TimeCreated.ToShortDateString()</small>
-
-                        @if (ViewData["ViewType"] as string == "My")
-                        {
-                            <form asp-action="Delete" method="post" class="mt-2">
-                                <input type="hidden" name="id" value="@article.Id" />
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                        }
+                        <div class="mt-2">
+                            <a asp-action="Details" asp-route-id="@article.Id" class="btn btn-primary btn-sm">Show more</a>
+                            @if (ViewData["ViewType"]?.ToString() == "My")
+                            {
+                                <a asp-action="Edit" asp-route-id="@article.Id" class="btn btn-warning btn-sm">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@article.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
         }
+
     </div>
 
     <!-- Modal for Creating Articles -->
