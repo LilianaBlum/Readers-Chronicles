@@ -1,0 +1,38 @@
+﻿@model ReadersChronicle.Data.Comment
+
+@{
+    ViewData["Title"] = "Edit Comment";
+}
+
+<h4>Edit Comment</h4>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" name="commentId" value="@Model.CommentId" />
+
+    <!-- Textarea for editing the comment description -->
+    <div class="mb-3">
+        <label for="description" class="form-label">Comment</label>
+        <textarea name="description" id="description" class="form-control" required>@Model.Description</textarea>
+    </div>
+
+    <!-- Submit Button to save the edited comment -->
+    <button type="submit" class="btn btn-primary">Update Comment</button>
+
+    <!-- Button to cancel and return to the previous page -->
+    <a href="@Url.Action("Details", "Articles", new { id = Model.ArticleId })" class="btn btn-secondary">Cancel</a>
+</form>
+
+<style scoped>
+    textarea {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+
+    .btn-primary {
+        background-color: #f56476;
+        border-color: #f56476;
+    }
+</style>

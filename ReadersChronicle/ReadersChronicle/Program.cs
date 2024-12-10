@@ -42,7 +42,8 @@ namespace ReadersChronicle
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
             builder.Services.AddHttpClient<BookService>();
             builder.Services.AddScoped<UserService>();
-
+            builder.Services.AddScoped<ArticleService>();
+            builder.Services.AddScoped<CommentService>();
 
             builder.Services.Configure<IISServerOptions>(options =>
             {
