@@ -20,36 +20,7 @@
                 </button>
                 <div class="navbar-collapse collapse d-md-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <!-- Main Group Dropdown -->
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-white fw-bold" href="#" id="mainDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Main
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="mainDropdown">
-                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Home</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="UserLibrary">Your Library</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="BookJournal">Book Journal</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Articles" asp-action="Index">Articles</a></li>
-                                </ul>
-                            </li>
-                        }
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <!-- User/Friend Related Dropdown -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-white fw-bold" href="#" id="userFriendDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    User/Friend Related
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="userFriendDropdown">
-                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="Search">Search Users</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="SentInvites">Sent Invites</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="ReceivedInvites">Received Invites</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="Friends">Friends List</a></li>
-                                </ul>
-                            </li>
-                        }
+                        @await Component.InvokeAsync("UserType") <!-- Invoke the ViewComponent here -->
                     </ul>
 
                     <!-- Profile/Logout/Login/Register -->

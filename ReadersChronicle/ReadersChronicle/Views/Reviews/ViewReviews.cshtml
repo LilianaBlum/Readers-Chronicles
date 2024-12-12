@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "View Reviews";
+}
+
+<h1>User Reviews</h1>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Reviewer</th>
+            <th>Content</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var review in Model)
+        {
+            <tr>
+                <td>@review.UserName</td>
+                <td>@review.Content</td>
+                <td>@review.Timestamp.ToString("g")</td>
+            </tr>
+        }
+    </tbody>
+</table>

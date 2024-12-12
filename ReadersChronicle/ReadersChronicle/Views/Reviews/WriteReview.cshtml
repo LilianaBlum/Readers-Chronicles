@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Write a Review";
+}
+
+
+<h1>Write a Review</h1>
+
+<div id="message-container" class="container mt-4" style="display: none;">
+    <div class="alert" id="message-alert" role="alert">
+        <span id="alert-message"></span>
+    </div>
+</div>
+
+<form id="review-form" method="post">
+    <div class="mb-3">
+        <label for="reviewContent" class="form-label">Your Review</label>
+        <textarea id="reviewContent" name="content" class="form-control" rows="4"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#review-form').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = $(this).serialize();
+
+            $.ajax({
+                url: '@Url.Action("WriteReview", "Reviews")',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    $('#message-container').show();
+
+                    if (response.success) {
+                        $('#message-alert').removeClass('alert-danger').addClass('alert-success');
+                    } else {
+                        $('#message-alert').removeClass('alert-success').addClass('alert-danger');
+                    }
+
+                    $('#alert-message').text(response.message);
+
+                    if (response.success) {
+                        $('#reviewContent').val('');
+                    }
+                },
+                error: function () {
+                    $('#message-container').show();
+                    $('#message-alert').removeClass('alert-success').addClass('alert-danger');
+                    $('#alert-message').text('An error occurred while submitting your review.');
+                }
+            });
+        });
+    });
+</script>
