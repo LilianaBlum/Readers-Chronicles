@@ -44,6 +44,7 @@ namespace ReadersChronicle
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<ArticleService>();
             builder.Services.AddScoped<CommentService>();
+            builder.Services.AddScoped<FriendshipService>();
 
             builder.Services.Configure<IISServerOptions>(options =>
             {

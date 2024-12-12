@@ -11,7 +11,6 @@ namespace ReadersChronicle.Data
         [Required]
         public string UserType { get; set; } = "user";
 
-        public bool IsOnline { get; set; }
         [Required]
         public string SecurityQuestion { get; set; }
         [Required]

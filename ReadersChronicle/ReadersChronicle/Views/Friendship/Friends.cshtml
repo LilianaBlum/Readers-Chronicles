@@ -1,0 +1,20 @@
+﻿@model IEnumerable<ReadersChronicle.Data.User>
+@{
+    ViewData["Title"] = "Friends List";
+}
+
+<h2>Friends List</h2>
+
+@if (Model != null && Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var friend in Model)
+        {
+            <li class="list-group-item">@friend.UserName</li>
+        }
+    </ul>
+}
+else
+{
+    <p>You currently have no friends.</p>
+}
