@@ -10,7 +10,10 @@
     <ul class="list-group">
         @foreach (var friend in Model)
         {
-            <li class="list-group-item">@friend.UserName</li>
+            <li class="list-group-item">
+                @friend.UserName
+                <a href="@Url.Action("Chat", "Messaging", new { userId = friend.Id })" class="btn btn-primary btn-sm">Message</a>
+            </li>
         }
     </ul>
 }
