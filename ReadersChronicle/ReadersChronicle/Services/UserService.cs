@@ -67,7 +67,7 @@ namespace ReadersChronicle.Services
             {
             new Claim("userName", user.UserName),
             new Claim("userId", user.Id.ToString()),
-            new Claim("userRole", user.UserType)
+            new Claim("UserType", user.UserType)
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
