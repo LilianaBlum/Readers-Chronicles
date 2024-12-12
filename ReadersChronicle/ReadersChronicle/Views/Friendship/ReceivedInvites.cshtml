@@ -1,0 +1,40 @@
+﻿@model IEnumerable<ReadersChronicle.Data.PendingFriendship>
+@{
+    ViewData["Title"] = "Received Invites";
+}
+
+<h2>Received Invites</h2>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invite in Model)
+            {
+                <tr>
+                    <td>@invite.InitiatorUser.UserName</td>
+                    <td>
+                        <form asp-action="ApproveRequest" method="post" class="d-inline">
+                            <input type="hidden" name="friendshipId" value="@invite.FriendshipID" />
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form asp-action="DenyRequest" method="post" class="d-inline">
+                            <input type="hidden" name="friendshipId" value="@invite.FriendshipID" />
+                            <button type="submit" class="btn btn-danger">Deny</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>You have not received any friendship invites.</p>
+}

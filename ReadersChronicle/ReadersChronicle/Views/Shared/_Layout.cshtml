@@ -20,24 +20,44 @@
                 </button>
                 <div class="navbar-collapse collapse d-md-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-white text-decoration-underline" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
+                        <!-- Main Group Dropdown -->
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white fw-bold" href="#" id="mainDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Main
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="mainDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Home</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="UserLibrary">Your Library</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="BookJournal">Book Journal</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Articles" asp-action="Index">Articles</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <!-- User/Friend Related Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white fw-bold" href="#" id="userFriendDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    User/Friend Related
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="userFriendDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="Search">Search Users</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="SentInvites">Sent Invites</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="ReceivedInvites">Received Invites</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Friendship" asp-action="Friends">Friends List</a></li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
-                    <ul class="navbar-nav mt-2" style="width:100%">
+
+                    <!-- Profile/Logout/Login/Register -->
+                    <ul class="navbar-nav">
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Home" asp-action="UserLibrary">Your Library</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Articles" asp-action="Index">Articles</a>
-                            </li>
-                            <li class="nav-item me-auto">
-                                <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Home" asp-action="BookJournal">Book Journal</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="fw-bold nav-link text-white text-decoration-underline" asp-controller="Account" asp-action="Profile">Profile</a>
+                                <a class="nav-link text-white fw-bold" asp-controller="Account" asp-action="Profile">Profile</a>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" id="logout-form">
@@ -48,10 +68,10 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="nav-link text-white fw-bold" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Account" asp-action="Register">Register</a>
+                                <a class="nav-link text-white fw-bold" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                         }
                     </ul>
