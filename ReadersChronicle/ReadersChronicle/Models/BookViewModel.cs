@@ -7,5 +7,6 @@
         public string BookId { get; set; }
         public int PageCount { get; set; }
         public string CoverUrl { get; set; }
+        public bool IsInLibrary { get; set; }
     }
 }
