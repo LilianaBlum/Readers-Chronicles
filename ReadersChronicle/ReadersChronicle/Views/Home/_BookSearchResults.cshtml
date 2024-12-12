@@ -17,13 +17,62 @@ else
                         <h5 class="card-title">@book.Title</h5>
                         <p class="card-text text-muted">Author: @book.Author</p>
                         <p class="card-text">Pages: @book.PageCount</p>
-                        <button class="btn btn-primary mt-auto" data-book-id="@book.BookId" data-title="@book.Title" data-author="@book.Author" data-cover-url="@book.CoverUrl" data-page-count="@book.PageCount">Add to Library</button>
+                        @if (book.IsInLibrary)
+                        {
+                            <button class="btn btn-secondary mt-auto" disabled>Already in Library</button>
+                        }
+                        else
+                        {
+                            <form class="add-to-library-form" data-book-id="@book.BookId" method="post" onsubmit="submitForm(event, this)">
+                                <input type="hidden" name="bookApiID" value="@book.BookId" />
+                                <input type="hidden" name="title" value="@book.Title" />
+                                <input type="hidden" name="author" value="@book.Author" />
+                                <input type="hidden" name="coverUrl" value="@book.CoverUrl" />
+                                <input type="hidden" name="pageCount" value="@book.PageCount" />
+                                <button type="submit" class="btn btn-primary mt-auto">Add to Library</button>
+                            </form>
+                        }
                     </div>
                 </div>
             </div>
         }
     </div>
 }
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script scoped>
+    function submitForm(event, form) {
+        event.preventDefault(); 
+
+        var bookId = form.querySelector('input[name="bookApiID"]').value;
+
+        var button = form.querySelector('button');
+        button.disabled = true;
+        button.textContent = 'Adding...';
+
+        $.ajax({
+            url: '@Url.Action("AddToLibrary", "Home")',
+            type: 'POST',
+            data: $(form).serialize(),
+            success: function (response) {
+                if (response.success) {
+                    button.textContent = 'Added to Library';
+                    $(button).removeClass('btn-primary').addClass('btn-secondary').prop('disabled', true);
+                    alert(response.message);
+                } else {
+                    button.disabled = false;
+                    button.textContent = 'Add to Library';
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                button.disabled = false;
+                button.textContent = 'Add to Library';
+                alert('An error occurred while adding the book.');
+            }
+        });
+    };
+</script>
 
 <style>
     .card {
@@ -35,27 +84,3 @@ else
             transform: translateY(-5px);
         }
 </style>
-<script>
-    $(document).on('click', '.btn[data-book-id]', function () {
-        var button = $(this);
-        var bookApiID = button.data('book-id');
-        var title = button.data('title');
-        var author = button.data('author');
-        var coverUrl = button.data('cover-url');
-        var pageCount = button.data('page-count');
-
-        $.post('/Home/AddToLibrary', {
-            bookApiID: bookApiID,
-            title: title,
-            author: author,
-            coverUrl: coverUrl,
-            pageCount: pageCount
-        }, function (response) {
-            if (response.success) {
-                alert(response.message);
-            } else {
-                alert(response.message);
-            }
-        });
-    });
-</script>

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ReadersChronicle.Data;
+using ReadersChronicle.Hubs;
 using ReadersChronicle.Services;
 using ReadersChronicle.Settings;
 using System.Text;
@@ -45,6 +46,8 @@ namespace ReadersChronicle
             builder.Services.AddScoped<ArticleService>();
             builder.Services.AddScoped<CommentService>();
             builder.Services.AddScoped<FriendshipService>();
+            builder.Services.AddScoped<MessagingService>();
+            builder.Services.AddSignalR();
 
             builder.Services.Configure<IISServerOptions>(options =>
             {
@@ -67,11 +70,12 @@ namespace ReadersChronicle
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.MapHub<MessageHub>("/messageHub");
 
             app.UseAuthentication();  // Use Authentication middleware
             app.UseAuthorization();
