@@ -7,7 +7,8 @@
             Admin Menu
         </a>
         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-            <li><a href="@Url.Action("ViewReviews", "Reviews")">View Reviews</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("ViewReviews", "Reviews")">View Reviews</a></li>
+            <li><a class="dropdown-item" href="@Url.Action("GetUsers", "Admin")">Manage Users</a></li>
         </ul>
     </li>
 }

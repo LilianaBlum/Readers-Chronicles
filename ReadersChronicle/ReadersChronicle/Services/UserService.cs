@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
 using ReadersChronicle.Settings;
@@ -48,6 +49,11 @@ namespace ReadersChronicle.Services
             if (user == null)
             {
                 return (false, "Invalid username or password.");
+            }
+
+            if(user.isBlocked == true)
+            {
+                return (false, "You are blocked");
             }
 
             var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
@@ -171,6 +177,19 @@ namespace ReadersChronicle.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<bool> ChangePassword(ChangePasswordViewModel model, User user)
+        {
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<(bool IsSuccess, string Message)> EditUserProfileAsync(ClaimsPrincipal userPrincipal, EditProfileViewModel model)

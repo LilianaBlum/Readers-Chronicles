@@ -2,12 +2,10 @@
 
 namespace ReadersChronicle.Models
 {
-    public class ResetPasswordViewModel
+    public class ChangePasswordViewModel
     {
-        public string UserNameOrEmail { get; set; }
-
         [Required]
-        public string SecurityAnswer { get; set; }
+        public string OldPassword { get; set; }
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
@@ -15,8 +13,7 @@ namespace ReadersChronicle.Models
         public string NewPassword { get; set; }
 
         [Required]
-        [DataType(DataType.Password)]
-        [Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; }
     }
 }
