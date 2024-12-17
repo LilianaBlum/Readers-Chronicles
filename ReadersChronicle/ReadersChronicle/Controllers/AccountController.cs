@@ -150,6 +150,7 @@ namespace ReadersChronicle.Controllers
             TempData.Keep("UserNameOrEmail");
 
             ViewData["SecurityQuestion"] = TempData["SecurityQuestion"];
+            ViewData["ErrorMessage"] = null;
             TempData.Keep("SecurityQuestion");
 
             var model = new ResetPasswordViewModel
@@ -173,6 +174,7 @@ namespace ReadersChronicle.Controllers
             if (!await _userService.VerifySecurityAnswerAsync(userNameOrEmail, model.SecurityAnswer))
             {
                 ModelState.AddModelError(string.Empty, "Incorrect security answer.");
+                ViewData["ErrorMessage"] = "Security answer not correct!";
                 ViewData["SecurityQuestion"] = TempData["SecurityQuestion"];
                 return View(model);
             }

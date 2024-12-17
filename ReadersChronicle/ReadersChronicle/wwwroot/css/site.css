@@ -17,14 +17,37 @@ html {
   min-height: 100%;
 }
 
-body {
-    margin-bottom: 60px;
-    background-color: white;
+html, body {
+    height: 100%; /* Ensure both html and body take full height */
+    margin: 0; /* Remove default margin */
 }
 
-#main-container{
-    height:90vh;
-    padding-top:7%;
+    body::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: inherit;
+        z-index: -1; /* Place the gradient layer behind the content */
+    }
+
+body {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../Common/background.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 100%; /* Ensure the body stretches to at least the height of the viewport */
+    display: flex; /* Enable flexbox for main content positioning */
+    flex-direction: column;
+    background-attachment: fixed; /* Fix the background for smaller screens */
+    background-size: cover;
+}
+
+#main-container {
+    height: 90vh;
+    flex-grow: 1;
 }
 
 main{
