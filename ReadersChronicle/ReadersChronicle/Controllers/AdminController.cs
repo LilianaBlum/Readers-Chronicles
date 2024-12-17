@@ -18,6 +18,17 @@ namespace ReadersChronicle.Controllers
             return View(users);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> SearchUsers(string username)
+        {
+            // If no username is provided, show all users
+            var users = string.IsNullOrWhiteSpace(username)
+                ? await _adminService.GetAllUsers()
+                : await _adminService.SearchUsersAsync(username);
+
+            return View("GetUsers", users);
+        }
+
         public async Task<IActionResult> ChangeIsBlocked([FromBody] ChangeIsBlockedDto model)
         {
             if (string.IsNullOrEmpty(model?.Username))

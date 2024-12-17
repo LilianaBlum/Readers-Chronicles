@@ -12,6 +12,7 @@ namespace ReadersChronicle.Models
 
         [Required]
         [EmailAddress]
+        [MaxLength(40, ErrorMessage="Email cannot be longer than 40 symbols")]
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$", ErrorMessage = "Only Gmail, Yahoo, and Outlook emails are allowed.")]
         public string Email { get; set; }
 

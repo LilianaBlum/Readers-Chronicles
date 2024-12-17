@@ -21,6 +21,13 @@ namespace ReadersChronicle.Services
             return users;
         }
 
+        public async Task<List<User>> SearchUsersAsync(string username)
+        {
+            return await _context.Users
+                .Where(u => u.UserType != "admin" && EF.Functions.Like(u.UserName, $"%{username}%"))
+                .ToListAsync();
+        }
+
         public async Task<bool> ChangeIsBlockedForUser(string username)
         {
             var user = await _context.Users.Where(u => u.UserName == username).FirstOrDefaultAsync();
