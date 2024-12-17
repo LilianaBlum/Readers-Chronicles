@@ -45,6 +45,19 @@ body {
     background-size: cover;
 }
 
+#admin-cover-column {
+    background-image: url('../Common/admin-start.jpeg');
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px 0 0 12px;
+}
+
+@media(min-width:768px){
+    #admin-cover-column{
+        height:70vh;
+    }
+}
+
 #main-container {
     height: 90vh;
     flex-grow: 1;
