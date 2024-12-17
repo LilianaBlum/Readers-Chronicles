@@ -16,6 +16,9 @@ namespace ReadersChronicle.Data
         [Required]
         public string SecurityAnswerHash { get; set; }
 
+        [Required]
+        public bool isBlocked { get; set; } = false;
+
         public virtual Profile Profile { get; set; }
         public ICollection<Friendship> Friendships1 { get; set; } // For friendships initiated by this user
         public ICollection<Friendship> Friendships2 { get; set; } // For friendships received by this user

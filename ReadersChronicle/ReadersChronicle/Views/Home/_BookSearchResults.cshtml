@@ -78,9 +78,30 @@ else
     .card {
         border: none;
         transition: transform 0.3s ease;
+        height: 100%; /* Ensure all cards have the same height */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
     }
 
         .card:hover {
             transform: translateY(-5px);
         }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Distribute content vertically */
+        flex-grow: 1; /* Allow card body to grow to fill space */
+        padding: 1rem;
+    }
+
+    .card .btn {
+        margin-top: auto; /* Pushes the button to the bottom */
+        background-color: #6d486b; /* Match button color */
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 0.3rem;
+    }
 </style>

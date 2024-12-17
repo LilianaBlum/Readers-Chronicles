@@ -189,6 +189,41 @@ namespace ReadersChronicle.Controllers
         }
 
         [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            TempData["SuccessMessage"] = null;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var result = await _userService.ChangePassword(model, user);
+
+            if (!result)
+            {
+                ModelState.AddModelError(string.Empty, "The old password is incorrect or the new password is invalid.");
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] = "Password changed successfully!";
+            return RedirectToAction("Profile", "Account");
+
+        }
+
+        [HttpGet]
         public async Task<IActionResult> EditProfile()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -257,10 +292,6 @@ namespace ReadersChronicle.Controllers
             return RedirectToAction("Profile");
         }
 
-        public async Task<IActionResult> ChangePassword()
-        {
-            return View();
-        }
 
         [HttpGet]
         public IActionResult DeleteProfileConfirmation()

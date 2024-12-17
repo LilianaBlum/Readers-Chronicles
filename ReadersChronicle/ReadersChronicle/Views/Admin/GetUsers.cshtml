@@ -1,0 +1,92 @@
+﻿@model List<ReadersChronicle.Data.User>
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Manage Users</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        @if (user.isBlocked)
+                        {
+                            <span class="badge bg-danger">Blocked</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning toggle-block"
+                                data-username="@user.UserName">
+                            @(user.isBlocked ? "Unblock" : "Block")
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const buttons = document.querySelectorAll(".toggle-block");
+
+            buttons.forEach(button => {
+                button.addEventListener("click", function () {
+                    const username = this.getAttribute("data-username");
+
+                    fetch('@Url.Action("ChangeIsBlocked", "Admin")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': '@Html.AntiForgeryToken()'
+                        },
+                        body: JSON.stringify({ username: username })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                location.reload();
+                            } else {
+                                alert("Error: " + data.message);
+                            }
+                        });
+                });
+            });
+        });
+    </script>
+}
+
+<style scoped>
+    .table th, .table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .table .btn {
+        font-size: 0.9rem;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5em;
+    }
+</style>
