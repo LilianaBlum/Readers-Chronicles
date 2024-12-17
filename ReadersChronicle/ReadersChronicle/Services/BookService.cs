@@ -23,6 +23,20 @@ namespace ReadersChronicle.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public async Task<bool> isUserAdmin()
+        {
+            var userId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
+            if(userId == null)
+            {
+                return false;
+            }
+            else
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                return user.UserType == "admin" ? true : false;
+            }
+        }
+
         public async Task<List<BookViewModel>> SearchBooksAsync(string query)
         {
             var userId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);

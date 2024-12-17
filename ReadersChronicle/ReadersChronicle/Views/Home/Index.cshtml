@@ -3,6 +3,8 @@
     bool isAuthenticated = User.Identity.IsAuthenticated;
 }
 
+@model ReadersChronicle.Models.SearchBookViewModel
+
 
 @if (!isAuthenticated)
 {
@@ -24,19 +26,22 @@
 }
 else
 {
-    <div class="container" id="search-page">
-        <h2 class="mb-4 pt-5 text-center">Search for Books</h2>
-        <form id="bookSearchForm" method="get" asp-action="SearchBooks">
-            <div class="input-group mb-3">
-                <input type="text" name="query" class="form-control" placeholder="Search by title or author" required />
-                <button class="btn btn-primary" type="submit">Search</button>
-            </div>
-        </form>
+    if (!Model.isAdmin)
+    {
+        <div class="container" id="search-page">
+            <h2 class="mb-4 pt-5 text-center">Search for Books</h2>
+            <form id="bookSearchForm" method="get" asp-action="SearchBooks">
+                <div class="input-group mb-3">
+                    <input type="text" name="query" class="form-control" placeholder="Search by title or author" required />
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
 
-        <div id="searchResults" class="row">
-            @* Book search results will be injected here *@
+            <div id="searchResults" class="row">
+                @* Book search results will be injected here *@
+            </div>
         </div>
-    </div>
+    }
 }
 
 @section Scripts {

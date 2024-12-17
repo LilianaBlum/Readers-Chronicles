@@ -21,9 +21,14 @@ namespace ReadersChronicle.Controllers
             _context = applicationDbContext;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var isUserAdmin = await _bookService.isUserAdmin();
+            var searchBookViewModel = new SearchBookViewModel
+            {
+                isAdmin = isUserAdmin
+            };
+            return View(searchBookViewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
