@@ -212,6 +212,45 @@ namespace ReadersChronicle.Services
             }
         }
 
+        public async Task<bool> RemoveBookAsync(string userId, int userBookId)
+        {
+            var userBook = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            if (userBook != null)
+            {
+                var userBookInLibrary = await _context.BookJournals
+                .Where(b => b.UserBookID == userBookId)
+                .FirstOrDefaultAsync();
+
+                if (userBookInLibrary != null)
+                {
+                    _context.BookJournals.Remove(userBookInLibrary);
+
+                }
+
+                _context.UserBooks.Remove(userBook);
+                await _context.SaveChangesAsync();
+            }
+
+            
+            var userBookAfterDeleting = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId && b.UserID == userId)
+                .FirstOrDefaultAsync();
+
+            var libraryBookAfterDeleting = await _context.BookJournals
+                .Where(b => b.UserBookID == userBookId)
+                .FirstOrDefaultAsync();
+
+            if (userBookAfterDeleting == null && libraryBookAfterDeleting == null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public async Task FinishBookAsync(string userId, int userBookId)
         {
             var userBook = await _context.UserBooks

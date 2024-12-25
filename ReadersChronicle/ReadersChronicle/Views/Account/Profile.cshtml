@@ -3,94 +3,106 @@
     ViewData["Title"] = "Profile";
 }
 
-<div class="container w-75">
-    <div class="row mb-5">
-        <h3>Welcome, @Model.UserName</h3>
-    </div>
-    <div class="row my-3">
-        <div class="col-md-3">
-            <div class="profile-img-container">
-                <img src="@Model.ProfileImage" alt="Profile Image" class="main-profile-img" width="140" height="140" />
-                <button class="btn btn-link edit-icon" data-bs-toggle="modal" data-bs-target="#changeProfileImageModal">
-                    <i class="fa fa-edit"></i>
-                </button>
-            </div>
+<div class="container" id="profile-container">
+    <div class="bg-white p-4 rounded shadow">
+        <div class="row mb-5">
+            <h3>Welcome, @Model.UserName</h3>
         </div>
-        <div class="col-md-5 ps-4">
-            <h4>@Model.UserName</h4>
-            <p>@Model.Email</p>
-        </div>
-        <div class="col-md-4 d-flex float-end">
-            <a href="@Url.Action("EditProfile", "Account")" class="btn profile-button btn-dark me-2">Edit</a>
-            <a class="btn profile-button text-white" href="@Url.Action("DeleteProfileConfirmation", "Account")">Delete</a>
-        </div>
-    </div>
-
-    <div class="row mt-5">
-        <h5>Bio</h5>
-        <p id="bio">@Model.Bio</p>
-    </div>
-
-    <div class="row my-3">
-        <h5>My email address</h5>
-        <div class="col-md-8 mt-2">
-            <p>
-                <i class="fa fa-envelope" aria-hidden="true"></i>
-                <span>@Model.Email</span>
-            </p>
-        </div>
-        <div class="col-md-4 mt-3">
-            <a href="@Url.Action("ChangePassword", "Account")" class="link-dark fw-bold">Change Password</a>
-        </div>
-    </div>
-
-
-    <div class="modal fade" id="changeProfileImageModal" tabindex="-1" aria-labelledby="changeProfileImageModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="changeProfileImageModalLabel">Change Profile Image</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="row my-3">
+            <div class="col-md-3">
+                <div class="profile-img-container">
+                    <img src="@Model.ProfileImage" alt="Profile Image" class="main-profile-img" width="140" height="140" />
+                    <button class="btn btn-link edit-icon" data-bs-toggle="modal" data-bs-target="#changeProfileImageModal">
+                        <i class="fa fa-edit"></i>
+                    </button>
                 </div>
-                <form asp-action="ChangeProfileImage" method="post" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <input type="file" name="ProfileImage" class="form-control" />
-                        <span class="text-danger" asp-validation-for="ProfileImage"></span>
+            </div>
+            <div class="col-md-5 ps-4">
+                <h4>@Model.UserName</h4>
+                <p>@Model.Email</p>
+            </div>
+            <div class="col-md-4 d-flex float-end">
+                <a href="@Url.Action("EditProfile", "Account")" class="btn profile-button btn-dark me-2">Edit</a>
+                <a class="btn profile-button text-white" href="@Url.Action("DeleteProfileConfirmation", "Account")">Delete</a>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <h5>Bio</h5>
+            <p id="bio">@Model.Bio</p>
+        </div>
+
+        <div class="row my-3">
+            <h5>My email address</h5>
+            <div class="col-md-8 mt-2">
+                <p>
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    <span>@Model.Email</span>
+                </p>
+            </div>
+            <div class="col-md-4 mt-3">
+                <a href="@Url.Action("ChangePassword", "Account")" class="link-dark fw-bold">Change Password</a>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="changeProfileImageModal" tabindex="-1" aria-labelledby="changeProfileImageModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changeProfileImageModalLabel">Change Profile Image</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
-                </form>
+                    <form asp-action="ChangeProfileImage" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <input type="file" name="ProfileImage" class="form-control" />
+                            <span class="text-danger" asp-validation-for="ProfileImage"></span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    
 </div>
 
 <link href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" rel="stylesheet" />
 
 <style scoped>
-    main{
-        justify-content:center;
-        align-content:center;
-        padding-bottom:15rem !important;
+    /* Profile container */
+    #profile-container {
+        margin-bottom: 10%;
+        margin-top:20%;
+        padding-bottom: 30px;
     }
 
-    body{
+    /* Background and container styles */
+    .bg-white {
+        background-color: #ffffff;
+        padding-left: 15% !important;
+    }
+
+    .rounded {
+        border-radius: 12px;
+    }
+
+    .shadow {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Main profile styling */
+    body {
         background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
     }
 
-    .profile-button {
-        background-color: #8d6b88;
-        font-weight: bold;
-        border: none;
-        height:2.5rem;
-    }
-
-    .profile-button:hover{
-            background-color: #013a55;
-    }
-
+    /* Profile image container */
     .profile-img-container {
         position: relative;
         width: 140px;
@@ -125,40 +137,51 @@
         padding: 0;
     }
 
-    .edit-icon:hover {
-        cursor: pointer;
-        background-color: #f0f0f0;
+    /* Profile button */
+    .profile-button {
+        background-color: #8d6b88;
+        font-weight: bold;
+        border: none;
+        height: 2.5rem;
+        align-content:center;
     }
 
-    .edit-icon i {
-        font-size: 16px;
+    .profile-button:hover {
+        background-color: #013a55;
     }
 
-    .fa-envelope {
-        display: inline-block;
-        padding: 8px;
-        background-color: #ebe8eb;
-        border-radius: 50%;
-        color: #333;
-        margin-right: 10px;
-        font-size: 20px;
-        line-height: 1;
-    }
-
-    p span {
-        font-size: 16px;
-    }
-
-    #bio{
-        width:100%;
-        padding:10px;
+    /* Bio section */
+    #bio {
+        width: 100%;
+        padding: 10px;
         background-color: #f9f9f9;
         color: darkgray;
         font-size: 18px;
     }
 
-    .modal{
-        position:absolute;
-        top:35%;
+    /* Modal-specific styles */
+    .modal {
+        top: 35% !important; /* Keep modal centered */
+    }
+
+    .modal-backdrop {
+        position: fixed;
+    }
+
+    .modal-content {
+        position: relative;
+        margin: auto;
+        top: auto;
+    }
+
+    /* Responsive styles */
+    @@media (max-width: 768px) {
+        #profile-container {
+            margin-top: 20%;
+        }
+
+        .profile-button {
+            font-size: 0.85rem;
+        }
     }
 </style>

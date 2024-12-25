@@ -1,31 +1,107 @@
 ﻿@model ReadersChronicle.Models.EditProfileViewModel
+
 @{
     ViewData["Title"] = "Edit Profile";
 }
 
-<div class="container mt-4">
-    <h1>Edit Profile</h1>
+<div class="container" id="edit-profile-container">
+    <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-center mb-4">Edit Profile</h2>
 
-    <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="UserName">Username</label>
-            <input asp-for="UserName" class="form-control" />
-            <span asp-validation-for="UserName" class="text-danger"></span>
-        </div>
+        <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="UserName" class="form-label">Username</label>
+                <input asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
 
-        <div class="form-group">
-            <label for="Email">Email</label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
 
-        <div class="form-group">
-            <label for="Bio">Bio</label>
-            <textarea asp-for="Bio" class="form-control"></textarea>
-            <span asp-validation-for="Bio" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label for="Bio" class="form-label">Bio</label>
+                <textarea asp-for="Bio" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Bio" class="text-danger"></span>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Update Profile</button>
-        <a href="@Url.Action("Profile", "Account")" class="btn btn-secondary">Cancel</a>
-    </form>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary" id="update-profile-button">Update Profile</button>
+                <a href="@Url.Action("Profile", "Account")" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
+
+<style scoped>
+    /* Container styling */
+    #edit-profile-container {
+        margin-top: 20%;
+    }
+
+    .bg-white {
+        background-color: #ffffff;
+    }
+
+    .rounded {
+        border-radius: 12px;
+    }
+
+    .shadow {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form field styling */
+    .form-label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-control {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .form-control:focus {
+        border-color: #8d6b88;
+        box-shadow: 0 0 5px rgba(141, 107, 136, 0.5);
+    }
+
+    /* Button styling */
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    #update-profile-button {
+        background-color: #8d6b88;
+        border: none;
+    }
+
+    #update-profile-button:hover {
+        background-color: #013a55;
+    }
+
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+            background-color: #8d6b88;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        #edit-profile-container {
+            margin-top: 20%;
+        }
+
+        .btn {
+            font-size: 0.85rem;
+        }
+    }
+</style>

@@ -131,6 +131,27 @@ namespace ReadersChronicle.Controllers
             return RedirectToAction("UserLibrary", new { status = "CurrentlyReading" });
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveBook(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _bookService.RemoveBookAsync(userId, userBookId);
+
+            if (!result)
+            {
+                return Json(new { success = false, message = "Something went wrong!" });
+            }
+
+            return RedirectToAction("UserLibrary");
+        }
+
         [HttpPost]
         public async Task<IActionResult> FinishBook(int userBookId)
         {

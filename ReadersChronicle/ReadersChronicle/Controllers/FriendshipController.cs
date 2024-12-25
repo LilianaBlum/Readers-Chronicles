@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReadersChronicle.Data;
 using ReadersChronicle.Services;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ReadersChronicle.Controllers
 {
@@ -23,6 +24,13 @@ namespace ReadersChronicle.Controllers
             return View(users);
         }
 
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            var users = await _friendshipService.GetAllUsersAsync(currentUserId);
+            return Json(users);
+        }
+
         [HttpPost]
         public async Task<IActionResult> SendRequest(string userId)
         {
@@ -31,10 +39,10 @@ namespace ReadersChronicle.Controllers
 
             if (!result.Success)
             {
-                TempData["ErrorMessage"] = result.Message;
+                return Json(new { success = false, message = result.Message });
             }
 
-            return RedirectToAction(nameof(Search));
+            return Json(new { success = true, message = "Request sent" });
         }
 
         public async Task<IActionResult> SentInvites()

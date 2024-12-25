@@ -20,6 +20,13 @@ namespace ReadersChronicle.Services
                 .ToListAsync();
         }
 
+        public async Task<List<User>> GetAllUsersAsync(string currentUserId)
+        {
+            return await _context.Users
+                .Where(u => u.UserType != "admin" && u.Id != currentUserId)
+                .ToListAsync();
+        }
+
         public async Task<(bool Success, string Message)> SendFriendRequestAsync(string initiatorUserId, string approvingUserId)
         {
             var existingRequest = await _context.PendingFriendships
