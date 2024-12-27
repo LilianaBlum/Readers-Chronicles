@@ -165,6 +165,34 @@ namespace ReadersChronicle.Services
                 UserBook = journal.UserBook,
                 StartDate = journal.StartDate,
                 EndDate = journal.EndDate,
+                Rating = journal.OverallRating,
+                OverallImpression = journal.OverallImpression,
+                Insights = journal.Insights,
+                AuthorsAim = journal.AuthorsAim,
+                Recommendation = journal.Recommendation,
+                AdditionalNotes = journal.AdditionalNotes
+            }).ToList();
+
+            return viewModel;
+        }
+
+        public async Task<List<BookJournalViewModel>> SearchBookJournalAsync(string userId, string query)
+        {
+            var userBooks = await _context.UserBooks
+        .Where(ub => ub.UserID == userId && ub.Title.Contains(query))
+        .ToListAsync();
+
+            var bookIds = userBooks.Select(ub => ub.UserBookID).ToList();
+            var journalEntries = await _context.BookJournals
+                .Where(j => bookIds.Contains(j.UserBookID))
+                .ToListAsync();
+
+            var viewModel = journalEntries.Select(journal => new BookJournalViewModel
+            {
+                JournalID = journal.JournalID,
+                UserBook = journal.UserBook,
+                StartDate = journal.StartDate,
+                EndDate = journal.EndDate,
                 OverallImpression = journal.OverallImpression,
                 Insights = journal.Insights,
                 AuthorsAim = journal.AuthorsAim,
@@ -305,6 +333,7 @@ namespace ReadersChronicle.Services
                 UserBook = journal.UserBook,
                 StartDate = journal.StartDate,
                 EndDate = journal.EndDate,
+                Rating = journal.OverallRating,
                 OverallImpression = journal.OverallImpression,
                 Insights = journal.Insights,
                 AuthorsAim = journal.AuthorsAim,

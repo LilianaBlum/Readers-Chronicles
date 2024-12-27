@@ -83,7 +83,7 @@ namespace ReadersChronicle.Controllers
             return View(userBookViewModels);
         }
 
-        public async Task<IActionResult> BookJournal()
+        public async Task<IActionResult> BookJournal(string query = null)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -92,7 +92,9 @@ namespace ReadersChronicle.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var viewModel = await _bookService.GetUserJournalAsync(userId);
+            var viewModel = string.IsNullOrEmpty(query)
+                ? await _bookService.GetUserJournalAsync(userId)
+                : await _bookService.SearchBookJournalAsync(userId, query);
 
             return View(viewModel);
         }
@@ -242,6 +244,7 @@ namespace ReadersChronicle.Controllers
             return Json(journal);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> SaveEditedJournal(EditJournalViewModel model)
         {
@@ -250,9 +253,11 @@ namespace ReadersChronicle.Controllers
                 var journal = await _context.BookJournals.FindAsync(model.JournalID);
                 if (journal != null)
                 {
-                    var viewModel = _bookService.SaveEditedJournalAsync(journal, model);
+                    // Save the edited journal
+                    await _bookService.SaveEditedJournalAsync(journal, model);
 
-                    return Json(new { success = true, updatedJournalEntries = viewModel });
+                    // Return success response
+                    return Json(new { success = true });
                 }
                 else
                 {

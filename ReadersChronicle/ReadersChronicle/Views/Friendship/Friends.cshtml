@@ -3,21 +3,73 @@
     ViewData["Title"] = "Friends List";
 }
 
-<h2>Friends List</h2>
+<div class="container" id="friends-list-container">
+    <h2 class="text-center mb-4">Friends List</h2>
 
-@if (Model != null && Model.Any())
-{
-    <ul class="list-group">
-        @foreach (var friend in Model)
-        {
-            <li class="list-group-item">
-                @friend.UserName
-                <a href="@Url.Action("Chat", "Messaging", new { userId = friend.Id })" class="btn btn-primary btn-sm">Message</a>
-            </li>
+    @if (Model != null && Model.Any())
+    {
+        <ul class="list-group">
+            @foreach (var friend in Model)
+            {
+                <li class="list-group-item d-flex align-items-center justify-content-between">
+                    <span class="friend-username">@friend.UserName</span>
+                    <a href="@Url.Action("Chat", "Messaging", new { userId = friend.Id })" class="btn btn-primary btn-sm">Message</a>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-center">You currently have no friends.</p>
+    }
+</div>
+
+<style scoped>
+    #friends-list-container {
+        margin-top: 50px;
+        padding-top: 2%;
+        background-color: #ffffff;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .list-group-item {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px 20px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+        .list-group-item:hover {
+            background-color: #f0f0f0;
         }
-    </ul>
-}
-else
-{
-    <p>You currently have no friends.</p>
-}
+
+    .btn-primary {
+        background-color: #6d486b;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background-color: #8d6b88;
+        }
+
+    .friend-username {
+        font-size: 1.2rem;
+        color: #555;
+        font-weight: bold;
+    }
+
+    p {
+        font-size: 1.2rem;
+        color: #666;
+    }
+</style>
