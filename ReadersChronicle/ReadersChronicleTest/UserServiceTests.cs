@@ -2,14 +2,10 @@
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
 using ReadersChronicle.Data;
-using ReadersChronicle.Settings;
 using Moq;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using System.Runtime.Intrinsics.X86;
 
 namespace ReadersChronicleTest
 {
