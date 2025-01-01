@@ -21,9 +21,14 @@ namespace ReadersChronicle.Controllers
             _context = applicationDbContext;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var isUserAdmin = await _bookService.isUserAdmin();
+            var searchBookViewModel = new SearchBookViewModel
+            {
+                isAdmin = isUserAdmin
+            };
+            return View(searchBookViewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -78,7 +83,7 @@ namespace ReadersChronicle.Controllers
             return View(userBookViewModels);
         }
 
-        public async Task<IActionResult> BookJournal()
+        public async Task<IActionResult> BookJournal(string query = null)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -87,7 +92,9 @@ namespace ReadersChronicle.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var viewModel = await _bookService.GetUserJournalAsync(userId);
+            var viewModel = string.IsNullOrEmpty(query)
+                ? await _bookService.GetUserJournalAsync(userId)
+                : await _bookService.SearchBookJournalAsync(userId, query);
 
             return View(viewModel);
         }
@@ -124,6 +131,27 @@ namespace ReadersChronicle.Controllers
             await _bookService.UpdateProgressAsync(userId, userBookId, currentPage);
 
             return RedirectToAction("UserLibrary", new { status = "CurrentlyReading" });
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveBook(int userBookId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _bookService.RemoveBookAsync(userId, userBookId);
+
+            if (!result)
+            {
+                return Json(new { success = false, message = "Something went wrong!" });
+            }
+
+            return RedirectToAction("UserLibrary");
         }
 
         [HttpPost]
@@ -216,6 +244,7 @@ namespace ReadersChronicle.Controllers
             return Json(journal);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> SaveEditedJournal(EditJournalViewModel model)
         {
@@ -224,9 +253,11 @@ namespace ReadersChronicle.Controllers
                 var journal = await _context.BookJournals.FindAsync(model.JournalID);
                 if (journal != null)
                 {
-                    var viewModel = _bookService.SaveEditedJournalAsync(journal, model);
+                    // Save the edited journal
+                    await _bookService.SaveEditedJournalAsync(journal, model);
 
-                    return Json(new { success = true, updatedJournalEntries = viewModel });
+                    // Return success response
+                    return Json(new { success = true, message = "Journal was successfully updated!" });
                 }
                 else
                 {

@@ -3,50 +3,273 @@
     bool isAuthenticated = User.Identity.IsAuthenticated;
 }
 
-<div class="container mt-5">
-    @if (!isAuthenticated)
-    {
+@model ReadersChronicle.Models.SearchBookViewModel
+
+
+@if (!isAuthenticated)
+{
+    <div class="container" id="welcome-page">
         <div class="text-center">
-            <h2>Welcome to the Application</h2>
-            <p>To enjoy all the features, please <a href="@Url.Action("Login", "Account")">log in</a> or <a href="@Url.Action("Register", "Account")">register</a> an account.</p>
+            <h1 class="display-4">Welcome to Reader's Chronicle</h1>
+            <p class="lead mt-3">
+                A website for readers to track their reading progress, maintain a personal book journal, and share their reading experiences with others.
+            </p>
+            <p>
+                Whether you're an avid reader or someone just starting, you'll love tracking your journey with us!
+            </p>
+            <div class="mt-4">
+                <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg mx-2">Log In</a>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-outline-primary btn-lg mx-2">Register</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    if (!Model.isAdmin)
+    {
+        <div class="container" id="search-page">
+            <h2 class="mb-4 pt-5 text-center">Search for Books</h2>
+            <form id="bookSearchForm" method="get" asp-action="SearchBooks">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="input-group mb-3">
+                            <input type="text" name="query" class="form-control rounded-pill" placeholder="Search by title or author" required />
+                            <button class="btn btn-primary rounded-pill" type="submit">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Loader -->
+            <div id="loader" class="text-center mt-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Fetching books, please wait...</p>
+            </div>
+
+            <div id="searchResults" class="mt-4">
+                @* Book search results will be injected here *@
+            </div>
         </div>
     }
     else
     {
-        <h2 class="mb-4 pt-5 text-center">Search for Books</h2>
-        <form id="bookSearchForm" method="get" asp-action="SearchBooks">
-            <div class="input-group mb-3">
-                <input type="text" name="query" class="form-control" placeholder="Search by title or author" required />
-                <button class="btn btn-primary" type="submit">Search</button>
+        <div class="container" id="admin-dashboard">
+            <div class="row">
+                <div class="col-md-6" id="admin-cover-column">
+                </div>
+                <div class="col-md-6 d-flex align-items-center justify-content-center" id="admin-info-column">
+                    <div class="text-center p-4 shadow rounded" style="width: 90%; max-width: 500px;">
+                        <h2 class="fw-bold text-uppercase mb-4">Hello Admin!</h2>
+                        <p class="lead mb-3">Welcome to the admin dashboard. You can manage users and reviews from here:</p>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a class="btn btn-primary w-100 mb-2" href="@Url.Action("ViewReviews", "Reviews")">View Reviews</a>
+                            </li>
+                            <li>
+                                <a class="btn btn-outline-primary w-100" href="@Url.Action("GetUsers", "Admin")">Manage Users</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </form>
-
-        <div id="searchResults" class="row">
-            @* Book search results will be injected here *@
         </div>
     }
-</div>
+}
 
 @section Scripts {
     <script scoped>
         $(document).on('submit', '#bookSearchForm', function (e) {
             e.preventDefault();
 
+            // Show the loader
+            $('#loader').show();
+            $('#searchResults').empty();
+
+            // Fetch the search results
             $.get('@Url.Action("SearchBooks", "Home")', $(this).serialize(), function (data) {
                 $('#searchResults').html(data);
+
+                // Hide the loader
+                $('#loader').hide();
+            }).fail(function () {
+                // Handle errors
+                $('#loader').hide();
+                $('#searchResults').html('<p class="text-danger">An error occurred while fetching the results. Please try again later.</p>');
             });
         });
     </script>
 }
 
 <style scoped>
-    .btn {
+    main{
+        margin-bottom:30px;
+        margin-top:5%;
+    }
+
+    #search-page .btn {
         background-color: #8d6b88;
         border: none;
     }
 
-    .btn:hover{
+    #search-page .btn:hover{
             background-color: #013a55;
     }
 
+
+    #welcome-page {
+        margin-top:10%;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Inner container styling */
+    #welcome-page .text-center {
+        background: linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #ffffff; /* White background */
+        padding: 40px;
+        border-radius: 12px; /* Rounded corners */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        max-width: 600px; /* Max width for content */
+        width: 90%; /* Responsive width */
+        text-align: center;
+    }
+
+    @@media (max-width: 768px) {
+    #welcome-page {
+        padding-top: 65px;
+        height: auto; /* Allow height to adjust with padding */
+    }
+}
+
+    /* Headings */
+    #welcome-page h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333333;
+    }
+
+    #welcome-page p.lead {
+        font-size: 1.25rem;
+        color: #555555;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Buttons */
+    #welcome-page .btn {
+        font-size: 1.1rem;
+        padding: 10px 20px;
+    }
+
+    #welcome-page .btn-primary {
+        background-color: #8d6b88;
+        border: none;
+    }
+
+    #welcome-page .btn-primary:hover {
+        background-color: #013a55;
+    }
+
+    #welcome-page .btn-outline-primary {
+        color: #013a55;
+        border-color: #013a55;
+    }
+
+    #welcome-page .btn-outline-primary:hover {
+        background-color: #013a55;
+        color: #ffffff;
+    }
+
+    #admin-dashboard {
+        margin-top: 50px; /* Adjust if needed */
+    }
+
+    #admin-info-column {
+        background-color: white;
+        border-radius: 0 12px 12px 0;
+    }
+
+    #admin-info-column h2 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    #admin-info-column p.lead {
+        font-size: 1.2rem;
+        color: #555;
+        margin-bottom: 1.5rem;
+    }
+
+    #admin-info-column .btn {
+        font-size: 1.1rem;
+        padding: 10px 20px;
+    }
+
+    #admin-info-column .btn-primary {
+        background-color: #8d6b88;
+        border: none;
+    }
+
+    #admin-info-column .btn-primary:hover {
+        background-color: #013a55;
+    }
+
+    #admin-info-column .btn-outline-primary {
+        color: #013a55;
+        border-color: #013a55;
+    }
+
+    #admin-info-column .btn-outline-primary:hover {
+        background-color: #013a55;
+        color: white;
+    }
+
+    #search-page {
+        margin-bottom: 50px;
+        background-color: #ffffff; /* White background */
+        border-radius: 12px; /* Rounded corners */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+
+        #search-page h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        #search-page .input-group {
+            width: 100%;
+        }
+
+        #search-page .form-control {
+            font-size: 1rem;
+            padding: 12px 20px;
+            border-radius: 50px; /* Rounded corners */
+        }
+
+        #search-page .btn {
+            font-size: 1rem;
+            padding: 12px;
+            border-radius: 50px; /* Rounded corners */
+            background-color: #8d6b88;
+            border: none;
+        }
+
+            #search-page .btn:hover {
+                background-color: #013a55;
+            }
+
+    #searchResults {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-around;
+    }
+
+    .col-md-8{
+        padding: 0px 20px;
+    }
 </style>

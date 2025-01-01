@@ -59,17 +59,9 @@ namespace ReadersChronicleTest
             _userManager = mockUserManager.Object;
             _signInManager = mockSignInManager.Object;
 
-            var mockJwtSettings = new JwtSettings { Key = "TestKey", Issuer = "TestIssuer", Audience = "TestAudience" };
-            var mockConfiguration = new Mock<IConfiguration>();
-            mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("aD$3j8Jg7%0zD4xT^#WqK3eRz9VmXcT5");
-            mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
-            mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
-
             _userService = new UserService(
                 _context,
-                Options.Create(mockJwtSettings),
                 _userManager,
-                mockConfiguration.Object,
                 _signInManager
             );
 

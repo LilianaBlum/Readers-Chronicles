@@ -1,7 +1,7 @@
 ﻿@model ReadersChronicle.Models.LoginViewModel
 
-<div class="container">
-    <div id="login-container" class="mt-5 w-100">
+<div class="container" id="logging-container">
+    <div id="login-container" class="w-100">
         <h2 class="fw-bold text-uppercase text-center mb-4">Login</h2>
         @if (ViewData.ModelState.ErrorCount > 0)
         {
@@ -27,9 +27,9 @@
 
             <button type="submit" class="btn btn-primary rounded-pill w-100 mt-2">Login</button>
         </form>
-        <p class="text-decoration-underline small text-end pt-4"><a href="@Url.Action("ForgotPassword", "Account")" class="text-dark">Forgot your password?</a></p>
+        <p class="text-decoration-underline small text-end pt-4"><a href="@Url.Action("ForgotPassword", "Account")" class="text-dark" itemid="forgot-password-question">Forgot your password?</a></p>
     </div>
-    <div class="pt-5" id="create-account">
+    <div id="create-account">
         <div class="row align-items-center">
             <div class="col-4">
                 <hr>
@@ -53,28 +53,110 @@
     </div>
 </div>
 
-<style>
+<style scoped>
+    #logging-container{
+        padding-top:10%;
+    }
+
     #login-container {
-        border: solid black 1px;
-        padding: 2rem 4rem;
-        border-radius: 2rem;
-        width: 80vh;
+        background: linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #ffffff;
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    #login-container h2 {
+        font-size: 1.8rem;
+        color: #333333;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #555555;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        font-size: 1rem;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid #ddd;
+        box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control:focus {
+        border-color: #8d6b88;
+        box-shadow: 0px 0px 5px rgba(141, 107, 136, 0.5);
     }
 
     .btn-primary {
-        background-color: grey;
+        background-color: #8d6b88;
         border: none;
+        font-size: 1.1rem;
+        padding: 0.75rem 1.5rem;
     }
 
-        .btn-primary:hover {
-            background-color: dimgrey;
-        }
+    .btn-primary:hover {
+        background-color: #013a55;
+    }
 
-    label {
-        color: grey;
+    .btn-outline-primary {
+        color: #013a55;
+        border: 2px solid #013a55;
+        font-size: 1.1rem;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #013a55;
+        color: #ffffff;
+    }
+
+    a.text-dark:hover {
+        text-decoration: underline;
+        color: #8d6b88;
+    }
+
+    a:hover{
+        font-weight:bold;
+    }
+
+    #create-account {
+        padding-top: 10px;
+    }
+
+    #create-account h5 {
+        color: #ffffff;
+        font-weight: 500;
     }
 
     #create-account-button {
-        border: grey 1px solid;
+        font-size: 1.1rem;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #8d6b88;
+    }
+
+    #create-account-button:hover {
+        background-color: #8d6b88;
+        color: #ffffff;
+    }
+
+    @@media (max-width: 768px) {
+        #login-container {
+            padding: 2rem;
+            margin-top:65px;
+            height:auto;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
     }
 </style>

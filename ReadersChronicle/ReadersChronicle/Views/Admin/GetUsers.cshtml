@@ -4,43 +4,62 @@
     ViewData["Title"] = "Manage Users";
 }
 
-<div class="container mt-5">
-    <h2 class="mb-4">Manage Users</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
-                <tr>
-                    <td>@user.UserName</td>
-                    <td>@user.Email</td>
-                    <td>
-                        @if (user.isBlocked)
-                        {
-                            <span class="badge bg-danger">Blocked</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success">Active</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-warning toggle-block"
-                                data-username="@user.UserName">
-                            @(user.isBlocked ? "Unblock" : "Block")
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="container" id="user-list-container">
+    <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-center mb-4">Manage Users</h2>
+
+        <div class="mb-4">
+            <form id="searchForm" method="get" asp-action="SearchUsers" asp-controller="Admin">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" name="username" placeholder="Search by username" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary" id="search-users-button">Search</button>
+                        <button href="@Url.Action("GetUsers", "Admin")" class="btn btn-outline-primary" id="show-all-users-button">Show All</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">Username</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.UserName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                @if (user.isBlocked)
+                                {
+                                    <span class="badge bg-danger">Blocked</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning toggle-block"
+                                        data-username="@user.UserName">
+                                    @(user.isBlocked ? "Unblock" : "Block")
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -76,17 +95,99 @@
 }
 
 <style scoped>
+    #user-list-container {
+        margin-top:10%;
+    }
+
+    /* Container styling */
+    .bg-white {
+        background-color: #ffffff;
+    }
+
+    .rounded {
+        border-radius: 12px;
+    }
+
+    .shadow {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Table styling */
+    .table {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+    .table thead {
+            background-color: #8d6b88;
+        color: #fff;
+    }
+
     .table th, .table td {
-        vertical-align: middle;
         text-align: center;
+        vertical-align: middle;
     }
 
-    .table .btn {
-        font-size: 0.9rem;
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
     }
 
+    /* Badge styling */
     .badge {
-        font-size: 0.9rem;
-        padding: 0.5em;
+        font-size: 0.85rem;
+        padding: 0.5em 0.75em;
+        border-radius: 0.5rem;
+    }
+
+    /* Button styling */
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .btn-outline-warning {
+        color: #856404;
+        border-color: #856404;
+    }
+
+    .btn-outline-warning:hover {
+        background-color: #856404;
+        color: #fff;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .table {
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            font-size: 0.75rem;
+        }
+
+        #user-list-container {
+            margin-top: 18%;
+        }
+    }
+
+    #search-users-button{
+        background-color: #8d6b88;
+        border: none;
+    }
+
+    #search-users-button:hover{
+            background-color: #013a55;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #013a55;
+        color: white;
+    }
+
+    .btn-outline-primary{
+        color: #013a55;
+        border-color: #013a55;
     }
 </style>

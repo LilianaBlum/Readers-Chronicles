@@ -83,6 +83,7 @@ namespace ReadersChronicle.Controllers
             }
 
             ModelState.AddModelError(string.Empty, message);
+
             return View(model);
         }
 
@@ -150,6 +151,7 @@ namespace ReadersChronicle.Controllers
             TempData.Keep("UserNameOrEmail");
 
             ViewData["SecurityQuestion"] = TempData["SecurityQuestion"];
+            ViewData["ErrorMessage"] = null;
             TempData.Keep("SecurityQuestion");
 
             var model = new ResetPasswordViewModel
@@ -173,6 +175,7 @@ namespace ReadersChronicle.Controllers
             if (!await _userService.VerifySecurityAnswerAsync(userNameOrEmail, model.SecurityAnswer))
             {
                 ModelState.AddModelError(string.Empty, "Incorrect security answer.");
+                ViewData["ErrorMessage"] = "Security answer not correct!";
                 ViewData["SecurityQuestion"] = TempData["SecurityQuestion"];
                 return View(model);
             }
@@ -214,7 +217,7 @@ namespace ReadersChronicle.Controllers
 
             if (!result)
             {
-                ModelState.AddModelError(string.Empty, "The old password is incorrect or the new password is invalid.");
+                ModelState.AddModelError(string.Empty, "The old password is incorrect");
                 return View(model);
             }
 
@@ -316,7 +319,7 @@ namespace ReadersChronicle.Controllers
             }
 
             TempData["ErrorMessage"] = message;
-            return RedirectToAction("Profile");
+            return RedirectToAction("DeleteProfileConfirmation");
         }
     }
 }

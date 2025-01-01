@@ -1,21 +1,112 @@
 ﻿@model ReadersChronicle.Models.DeleteProfileConfirmationViewModel
 
-<h2>Confirm Profile Deletion</h2>
-<p>To delete your profile, please confirm by entering your password.</p>
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+@{
+    ViewData["Title"] = "Confirm Profile Deletion";
 }
 
-@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+<div class="container" id="delete-profile-container">
+    <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-center mb-4 text-danger">Confirm Profile Deletion</h2>
+        <p class="text-center text-muted">To delete your profile, please confirm by entering your password.</p>
 
-<form asp-action="DeleteProfileConfirmation" method="post">
-    <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger text-center">@TempData["ErrorMessage"]</div>
+        }
+
+        @Html.ValidationSummary(false, "", new { @class = "text-danger text-center" })
+
+        <form asp-action="DeleteProfileConfirmation" method="post">
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-danger" id="delete-profile-button">Delete Profile</button>
+                <a asp-action="Profile" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
-    <button type="submit" class="btn btn-danger mt-3">Delete Profile</button>
-    <a asp-action="Profile" class="btn btn-secondary mt-3">Cancel</a>
-</form>
+</div>
+
+<style scoped>
+    /* Container styling */
+    #delete-profile-container {
+        margin-top: 15%;
+    }
+
+    .bg-white {
+        background-color: #ffffff;
+    }
+
+    .rounded {
+        border-radius: 12px;
+    }
+
+    .shadow {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Heading styling */
+    .text-danger {
+        font-weight: bold;
+    }
+
+    .text-muted {
+        color: #6c757d;
+    }
+
+    /* Form field styling */
+    .form-label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-control {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .form-control:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+    }
+
+    /* Button styling */
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    #delete-profile-button {
+        background-color: #dc3545;
+        border: none;
+    }
+
+    #delete-profile-button:hover {
+        background-color: #a71d2a;
+    }
+
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        #delete-profile-container {
+            margin-top: 20%;
+        }
+
+        .btn {
+            font-size: 0.85rem;
+        }
+    }
+</style>

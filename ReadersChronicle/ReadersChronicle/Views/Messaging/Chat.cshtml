@@ -1,16 +1,18 @@
 ﻿@using System.Security.Claims
 @model ReadersChronicle.Models.ChatViewModel
 
-    <div class="row mt-4">
-        <a class="dropdown-item" asp-controller="Friendship" asp-action="Friends">Back</a>
-    </div>
+<div class="container" id="messaging-container">
     <div class="chat-window">
-        <h3>Chat with @Model.ReceiverUserName</h3>
-
+        <div class="row mt-4 d-flex mb-3">
+            <div class="col-3">
+                <a class="w-25 ps-3 fw-bold fs-5" id="back-button" asp-controller="Friendship" asp-action="Friends">Back</a>
+            </div>
+            <div class="col-9"><h4 id="message-receiver" class="pe-3">Chat with @Model.ReceiverUserName</h4></div>
+        </div>
         <div class="messages" id="messages">
             @foreach (var message in Model.Messages)
             {
-                <div class="message @(message.SenderUserId == Model.CurrentUserId ? "sent" : "received")">
+                <div class="message my-3 @(message.SenderUserId == Model.CurrentUserId ? "sent" : "received")">
                     <strong>@message.SenderUserName:</strong>
                     <p>@message.Text</p>
                     <span class="timestamp">@message.SentAt.ToLocalTime().ToString("g")</span>
@@ -18,12 +20,12 @@
             }
         </div>
 
-        <div class="message-input">
-            <textarea id="messageText" placeholder="Type your message..."></textarea>
-            <button id="sendButton">Send</button>
+        <div class="message-input d-flex align-items-center mt-3">
+            <textarea id="messageText" class="form-control me-2" placeholder="Type your message..." rows="1"></textarea>
+            <button id="sendButton" class="btn btn-primary">Send</button>
         </div>
     </div>
-
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 
@@ -70,16 +72,40 @@
 </script>
 
 <style scoped>
+    #back-button{
+        color:black;
+        text-decoration:none;
+    }
+
+    #message-receiver{
+        float:right;
+        margin-bottom: 0px !important;
+    }
+
+    #messaging-container {
+        margin-top: 50px;
+        height:93%;
+        padding-top: 2%;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
     .chat-window {
+        display: flex;
+        flex-direction: column; /* Stack elements vertically */
+        justify-content: space-between; /* Push the input to the bottom */
         border: 1px solid #ddd;
         border-radius: 10px;
+        background-color: white;
         padding: 10px;
         max-width: 600px;
         margin: auto;
+        height: 95%;
     }
 
     .messages {
-        height: 400px;
+        flex: 1; /* Take available vertical space */
         overflow-y: scroll;
         padding: 10px;
         background: #f9f9f9;
@@ -113,17 +139,44 @@
     }
 
 
-    #message-input {
-        display: flex;
+    .message-input {
+        border-top: 1px solid #ddd;
+        padding: 10px;
+        background-color: #ffffff;
+        border-radius: 0 0 10px 10px;
     }
 
     #messageText {
         flex: 1;
-        padding: 5px;
+        border-radius: 20px;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+        resize: none; /* Prevent resizing */
     }
 
+        #messageText:focus {
+            outline: none;
+            border-color: #6d486b;
+            box-shadow: 0 0 5px rgba(109, 72, 107, 0.5);
+        }
+
     #sendButton {
-        padding: 5px 10px;
+        background-color: #6d486b;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+    }
+
+        #sendButton:hover {
+            background-color: #8d6b88;
+        }
+
+    .message-input {
+        box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
     }
 
 </style>

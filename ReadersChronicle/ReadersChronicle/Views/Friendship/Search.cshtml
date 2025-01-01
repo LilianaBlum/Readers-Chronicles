@@ -5,44 +5,192 @@
 
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-warning">
+    <div class="alert alert-warning text-center">
         @TempData["ErrorMessage"]
     </div>
 }
 
-<h2>Search Users</h2>
+<div class="container" id="search-users-container">
+    <h2 class="text-center mb-4">Search Users</h2>
 
-<form asp-action="Search" method="get" class="mb-3">
-    <input type="text" name="query" placeholder="Search by username..." class="form-control" />
-    <button type="submit" class="btn btn-primary mt-2">Search</button>
-</form>
+    <!-- Search Form -->
+    <div class="row d-flex">
+        <form id="searchForm" method="get" asp-action="Search" asp-controller="Friendship">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="query" placeholder="Search by username" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" id="search-users-button">Search</button>
+                    <button type="button" class="btn btn-outline-primary" id="show-all-users-button">Show All</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
-@if (Model != null && Model.Any())
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
                 <tr>
-                    <td>@user.UserName</td>
-                    <td>
-                        <form asp-action="SendRequest" method="post">
-                            <input type="hidden" name="userId" value="@user.Id" />
-                            <button type="submit" class="btn btn-success">Send Request</button>
-                        </form>
-                    </td>
+                    <th>Username</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody id="user-list-body">
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td class="d-flex">
+                            <p>@user.UserName</p>
+                            <form onsubmit="submitForm(event, this)"  method="post" class="d-inline ms-auto">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit" class="btn btn-success">Send Request</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('show-all-users-button').addEventListener('click', function () {
+            document.querySelector('[name="query"]').value = '';
+
+            fetch('@Url.Action("GetAllUsers", "Friendship")')
+                .then(response => response.json())
+                .then(users => {
+                    const tableBody = document.getElementById('user-list-body');
+
+                    tableBody.innerHTML = '';
+
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                                    <td class="d-flex">
+                                        <p>${user.userName}</p>
+                                                         <form onsubmit="submitForm(event, this)"  method="post" class="d-inline ms-auto">
+                                                <input type="hidden" name="userId" value="${user.id}" />
+                                        <button type="submit" class="btn btn-success">Send Request</button>
+                                    </form>
+                                    </td>
+                                `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching all users:', error));
+        });
+
+        function submitForm(event, form) {
+            event.preventDefault();
+
+            var userId = form.querySelector('input[name="userId"]').value;
+
+            $.ajax({
+                url: '@Url.Action("SendRequest", "Friendship")',
+                type: 'POST',
+                data: $(form).serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert('Something went wrong!');
+                }
+            });
+        };
+    </script>
 }
-else
-{
-    <p>No users found.</p>
-}
+
+<style scoped>
+    #search-users-container {
+        margin-top: 50px;
+        padding-top: 2%;
+        background-color: #ffffff;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .alert-warning {
+        background-color: #ffcc00;
+        color: #333;
+        font-weight: bold;
+    }
+
+    #show-all-users-button{
+        border: none;
+        color:white;
+        background-color: #8d6b88;
+    }
+
+    #show-all-users-button:hover {
+        border: none;
+        background-color: #6d486b;
+    }
+
+    .btn-primary {
+        background-color: #6d486b;
+        border: none;
+    }
+
+    .btn-success:active {
+        background-color: #6d486b !;
+        border: none;
+    }
+
+    .btn-success:focus {
+        background-color: #6d486b !;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background-color: #6d486b;
+        }
+
+    .table {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .table-bordered {
+        border: 1px solid #ddd;
+    }
+
+    thead {
+        background-color: #6d486b;
+        color: white;
+    }
+
+    .btn-success {
+        background-color: #8d6b88;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background-color: #8d6b88;
+        }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    h2 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    p {
+        font-size: 1.2rem;
+        color: #666;
+    }
+
+    .input-group {
+        max-width: 500px;
+    }
+</style>

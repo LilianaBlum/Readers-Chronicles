@@ -1,56 +1,114 @@
 ﻿@using ReadersChronicle.Models
 @model List<BookJournalViewModel>
 
-<h2 class="mb-5">Book Journal</h2>
-
-<div class="row">
-    @foreach (var journal in Model)
-    {
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">@journal.Title</h5>
-                    <p class="card-text"><strong>Start Date:</strong> @journal.StartDate?.ToString("d")</p>
-                    <p class="card-text"><strong>End Date:</strong> @journal.EndDate?.ToString("d")</p>
-
-                    @if (!string.IsNullOrEmpty(journal.CoverImageBase64))
-                    {
-                        <img src="data:image/jpeg;base64,@journal.CoverImageBase64" alt="@journal.Title" class="img-thumbnail" />
-                    }
-                    else
-                    {
-                        <p>No image available</p>
-                    }
-
-                    @if (!string.IsNullOrEmpty(journal.OverallImpression))
-                    {
-                        <p class="card-text"><strong>Impression:</strong> @journal.OverallImpression</p>
-                    }
-
-                    @if (!string.IsNullOrEmpty(journal.Insights))
-                    {
-                        <p class="card-text"><strong>Insights:</strong> @journal.Insights</p>
-                    }
-
-                    <!-- Edit Entry Button -->
-                    <button class="btn btn-primary" id="open-edit-modal" data-id="@journal.JournalID" data-bs-toggle="modal" data-bs-target="#editJournalModal">
-                        Edit Entry
-                    </button>
+<div class="container" id="user-journal-container">
+    <h2 class="mb-3 text-center">Book Journal</h2>
+    <div class="mb-4">
+        <form id="searchForm" method="get" asp-action="BookJournal" asp-controller="Home">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <input type="text" class="form-control rounded-pill shadow-sm" name="query" placeholder="Search by book title" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary rounded-pill" id="search-journal-button">Search</button>
+                    <a href="@Url.Action("BookJournal", "Home")" class="btn btn-primary rounded-pill" id="show-all-users-button">Show All</a>
                 </div>
             </div>
-        </div>
-    }
+        </form>
+    </div>
+
+    <div class="row">
+        @foreach (var journal in Model)
+        {
+            <div class="col-12 mb-4">
+                <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+                    <div class="row g-0">
+                        <!-- Cover Image -->
+                        <div class="col-md-4">
+                            @if (!string.IsNullOrEmpty(journal.CoverImageBase64))
+                            {
+                                <img src="data:image/jpeg;base64,@journal.CoverImageBase64"
+                                     alt="@journal.Title"
+                                     class="img-fluid rounded-start w-100" />
+                            }
+                            else
+                            {
+                                <div class="d-flex justify-content-center align-items-center bg-light" style="height: 100%; min-height: 200px;">
+                                    <p class="text-muted">No image available</p>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Journal Details -->
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-title text-dark">@journal.Title</h5>
+                                <p class="card-text"><strong>Author:</strong> @journal.UserBook.Author</p>
+                                <p class="card-text"><strong>Start Date:</strong> @journal.StartDate?.ToString("d")</p>
+                                <p class="card-text"><strong>End Date:</strong> @journal.EndDate?.ToString("d")</p>
+                                <p class="card-text"><strong>Rating:</strong> @journal.Rating?.ToString("N1")</p>
+
+                                <!-- Toggle Button to Show/Hide Details -->
+                                <button class="btn btn-outline-primary mt-3 rounded-pill"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#journal-details-@journal.JournalID"
+                                        aria-expanded="false"
+                                        aria-controls="journal-details-@journal.JournalID">
+                                    Show Full Entry
+                                </button>
+
+                                <!-- Hidden Details (Initially Hidden) -->
+                                <div class="collapse mt-3" id="journal-details-@journal.JournalID">
+                                    @if (!string.IsNullOrEmpty(journal.OverallImpression))
+                                    {
+                                        <p class="card-text"><strong>Overall Impression:</strong> @journal.OverallImpression</p>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(journal.Insights))
+                                    {
+                                        <p class="card-text"><strong>Insights:</strong> @journal.Insights</p>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(journal.AuthorsAim))
+                                    {
+                                        <p class="card-text"><strong>Author's Aim:</strong> @journal.AuthorsAim</p>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(journal.Recommendation))
+                                    {
+                                        <p class="card-text"><strong>Recommendation:</strong> @journal.Recommendation</p>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(journal.AdditionalNotes))
+                                    {
+                                        <p class="card-text"><strong>Additional Notes:</strong> @journal.AdditionalNotes</p>
+                                    }
+                                </div>
+
+                                <!-- Edit Entry Button -->
+                                <button class="btn btn-outline-primary mt-3 rounded-pill" id="open-edit-modal"
+                                        data-id="@journal.JournalID"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editJournalModal">
+                                    Edit Entry
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
 <!-- Modal for Editing Journal Entry -->
 <div class="modal fade mt-5" id="editJournalModal" tabindex="-1" role="dialog" aria-labelledby="editJournalModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content mb-5">
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="editJournalModalLabel">Edit Journal Entry</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <!-- Form to edit journal -->
@@ -61,47 +119,47 @@
                     <!-- Fields for editing -->
                     <div class="mb-3">
                         <label for="StartDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="StartDate" name="StartDate" />
+                        <input type="date" class="form-control shadow-sm" id="StartDate" name="StartDate" />
                     </div>
 
                     <div class="mb-3">
                         <label for="EndDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="EndDate" name="EndDate" />
+                        <input type="date" class="form-control shadow-sm" id="EndDate" name="EndDate" />
                     </div>
 
                     <div class="mb-3">
                         <label for="OverallRating" class="form-label">Rating</label>
-                        <input type="number" class="form-control" id="OverallRating" name="OverallRating" min="1" max="5" />
+                        <input type="number" class="form-control shadow-sm" id="OverallRating" name="OverallRating" min="1" max="5" />
                     </div>
 
                     <div class="mb-3">
                         <label for="OverallImpression" class="form-label">Impression</label>
-                        <textarea class="form-control" id="OverallImpression" name="OverallImpression"></textarea>
+                        <textarea class="form-control shadow-sm" id="OverallImpression" name="OverallImpression"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label for="Insights" class="form-label">Insights</label>
-                        <textarea class="form-control" id="Insights" name="Insights"></textarea>
+                        <textarea class="form-control shadow-sm" id="Insights" name="Insights"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label for="AuthorsAim" class="form-label">Author's Aim</label>
-                        <textarea class="form-control" id="AuthorsAim" name="AuthorsAim"></textarea>
+                        <textarea class="form-control shadow-sm" id="AuthorsAim" name="AuthorsAim"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label for="Recommendation" class="form-label">Recommendation</label>
-                        <textarea class="form-control" id="Recommendation" name="Recommendation"></textarea>
+                        <textarea class="form-control shadow-sm" id="Recommendation" name="Recommendation"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label for="AdditionalNotes" class="form-label">Additional Notes</label>
-                        <textarea class="form-control" id="AdditionalNotes" name="AdditionalNotes"></textarea>
+                        <textarea class="form-control shadow-sm" id="AdditionalNotes" name="AdditionalNotes"></textarea>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" id="save-edited-data" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="save-edited-data" class="btn btn-primary rounded-pill">Save</button>
                     </div>
                 </form>
             </div>
@@ -112,7 +170,7 @@
 <script scoped>
     $(document).ready(function () {
         // Trigger the modal when the 'Edit Entry' button is clicked
-        $('#open-edit-modal').click(function () {
+        $(document).on('click', '#open-edit-modal', function () {
             var journalId = $(this).data('id');  // Get journal ID
 
             // Use AJAX to get the journal data and populate the form
@@ -120,11 +178,9 @@
                 url: '@Url.Action("EditJournal", "Home")',  // Action that fetches journal data
                 data: { id: journalId },  // Send journal ID to the server
                 success: function (data) {
-                    console.log('Received Data:', data);
                     // Check if data exists
                     if (data) {
-
-                        // Populate form fields with the data received (match the casing)
+                        // Populate form fields with the data received
                         $('#JournalID').val(data.journalID);
                         $('#UserBookID').val(data.userBookID);
                         $('#OverallRating').val(data.overallRating);
@@ -142,9 +198,6 @@
                         if (data.endDate) {
                             $('#EndDate').val(formatDateForInput(data.endDate));
                         }
-
-                        console.log('StartDate:', $('#StartDate').val());
-                        console.log('EndDate:', $('#EndDate').val());
 
                         // Open the modal
                         $('#editJournalModal').modal('show');
@@ -184,7 +237,8 @@
                     console.log('Response:', response); // Log the response to debug it
                     if (response.success) {
                         $('#editJournalModal').modal('hide'); // Close modal if successful
-                        updateJournalList(response.updatedJournalEntries); // Update journal list
+                        location.reload();  // Reload the page to fetch updated journal list
+                        alert(response.message);
                     } else {
                         alert('Error: ' + response.message || 'Unknown error');
                     }
@@ -197,35 +251,36 @@
                 }
             });
         });
-
-        // Function to update the journal list after saving
-        function updateJournalList(journals) {
-            var journalListContainer = $('.row'); // The container where journals are listed
-
-            // Clear existing journals in the list
-            journalListContainer.empty();
-
-            // Iterate over the updated journals and create the new HTML
-            journals.forEach(function (journal) {
-                var journalHTML = `
-                    <div class="col-md-6 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">${journal.title}</h5>
-                                <p class="card-text"><strong>Start Date:</strong> ${new Date(journal.startDate).toLocaleDateString()}</p>
-                                <p class="card-text"><strong>End Date:</strong> ${new Date(journal.endDate).toLocaleDateString()}</p>
-                                ${journal.coverImageBase64 ? '<img src="data:image/jpeg;base64,' + journal.coverImageBase64 + '" alt="' + journal.title + '" class="img-thumbnail" />' : '<p>No image available</p>'}
-                                ${journal.overallImpression ? '<p class="card-text"><strong>Impression:</strong> ' + journal.overallImpression + '</p>' : ''}
-                                ${journal.insights ? '<p class="card-text"><strong>Insights:</strong> ' + journal.insights + '</p>' : ''}
-                                <button class="btn btn-primary" data-id="${journal.journalID}" data-bs-toggle="modal" data-bs-target="#editJournalModal">Edit Entry</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Append the new HTML for the journal
-                journalListContainer.append(journalHTML);
-            });
-        }
     });
 </script>
+
+<style scoped>
+    #user-journal-container {
+        margin-top: 50px;
+        padding-top: 2%;
+        background-color: #ffffff; /* White background */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+
+    .btn-outline-primary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #8d6b88;
+            border-color: #6c757d;
+        }
+
+    .btn-primary {
+        color: #fff;
+        background-color:#8d6b88; 
+        border-color: #8d6b88;
+    }
+
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #8d6b88;
+            border-color: #6c757d;
+        }
+</style>
