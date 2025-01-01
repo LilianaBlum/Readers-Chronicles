@@ -1,46 +1,55 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using ReadersChronicle.Data;
 using ReadersChronicle.Models;
-using ReadersChronicle.Settings;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace ReadersChronicle.Services
 {
+    /// <summary>
+    /// Provides services related to user account management, including registration, login, profile management, and password reset.
+    /// </summary>
     public class UserService
     {
         private readonly ApplicationDbContext _context;
-        private readonly JwtSettings _jwtSettings;
         private readonly UserManager<User> _userManager;
-        private readonly IConfiguration _configuration;
         private readonly SignInManager<User> _signInManager;
 
-        public UserService(ApplicationDbContext context, IOptions<JwtSettings> jwtSettings, UserManager<User> userManager, IConfiguration configuration, SignInManager<User> signInManager)
+        public UserService(ApplicationDbContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _context = context;
-            _jwtSettings = jwtSettings.Value;
             _userManager = userManager;
-            _configuration = configuration;
             _signInManager = signInManager;
         }
 
+        /// <summary>
+        /// Checks if a username is unique within the system.
+        /// </summary>
+        /// <param name="username">The username to check.</param>
+        /// <returns>True if the username is unique, false otherwise.</returns>
         public async Task<bool> IsUsernameUniqueAsync(string username)
         {
             var user = _context.Users.Where(user => user.UserName.Equals(username)).FirstOrDefault();
             return user == null;
         }
 
+        /// <summary>
+        /// Checks if an email is unique within the system.
+        /// </summary>
+        /// <param name="email">The email to check.</param>
+        /// <returns>True if the email is unique, false otherwise.</returns>
         public async Task<bool> IsEmailUniqueAsync(string email)
         {
             var user = _context.Users.Where(user => user.Email.Equals(email)).FirstOrDefault();
             return user == null;
         }
 
+        /// <summary>
+        /// Checks if a username is unique for profile updates, excluding the current username.
+        /// </summary>
+        /// <param name="username">The username to check.</param>
+        /// <param name="currentUsername">The current username to exclude from the check.</param>
+        /// <returns>True if the username is unique for profile updates, false otherwise.</returns>
         public async Task<bool> IsUsernameUniqueForProfileUpdateAsync(string username, string currentUsername)
         {
             var user = await _context.Users
@@ -50,6 +59,12 @@ namespace ReadersChronicle.Services
             return user == null;
         }
 
+        /// <summary>
+        /// Checks if an email is unique for profile updates, excluding the current email.
+        /// </summary>
+        /// <param name="email">The email to check.</param>
+        /// <param name="currentEmail">The current email to exclude from the check.</param>
+        /// <returns>True if the email is unique for profile updates, false otherwise.</returns>
         public async Task<bool> IsEmailUniqueForProfileUpdateAsync(string email, string currentEmail)
         {
             var user = await _context.Users
@@ -59,7 +74,11 @@ namespace ReadersChronicle.Services
             return user == null;
         }
 
-
+        /// <summary>
+        /// Logs in a user with their username and password.
+        /// </summary>
+        /// <param name="model">The login model containing username and password.</param>
+        /// <returns>A tuple containing a success flag and a message indicating the login result.</returns>
         public async Task<(bool IsSuccess, string Message)> LoginAsync(LoginViewModel model)
         {
             var user = _context.Users.Where(user => user.UserName.Equals(model.UserName)).FirstOrDefault();
@@ -84,32 +103,20 @@ namespace ReadersChronicle.Services
             return (false, "Invalid username or password.");
         }
 
-        //private string GenerateJwtToken(User user)
-        //{
-        //    var claims = new[]
-        //    {
-        //    new Claim("userName", user.UserName),
-        //    new Claim("userId", user.Id.ToString()),
-        //    new Claim("UserType", user.UserType)
-        //};
-
-        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        //    var token = new JwtSecurityToken(
-        //        issuer: _configuration["Jwt:Issuer"],
-        //        audience: _configuration["Jwt:Audience"],
-        //        claims: claims,
-        //        expires: DateTime.Now.AddHours(5),
-        //        signingCredentials: creds);
-
-        //    return new JwtSecurityTokenHandler().WriteToken(token);
-        //}
-
+        /// <summary>
+        /// Logs out the currently authenticated user.
+        /// </summary>
+        /// <returns>Task representing the asynchronous operation.</returns>
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
         }
 
+        /// <summary>
+        /// Registers a new user with the provided registration details.
+        /// </summary>
+        /// <param name="model">The registration model containing user details.</param>
+        /// <returns>A tuple containing a success flag and a message indicating the registration result.</returns>
         public async Task<(bool IsSuccess, string Message)> RegisterAsync(RegisterViewModel model)
         {
             if (!await IsUsernameUniqueAsync(model.UserName))
@@ -143,6 +150,11 @@ namespace ReadersChronicle.Services
             return (false, errors);
         }
 
+        /// <summary>
+        /// Creates a default profile for a new user after registration.
+        /// </summary>
+        /// <param name="username">The username of the user to create a profile for.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
         public async Task CreateUserProfile(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
@@ -164,6 +176,11 @@ namespace ReadersChronicle.Services
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Retrieves the security question associated with a user account, identified by username or email.
+        /// </summary>
+        /// <param name="userNameOrEmail">The username or email of the user.</param>
+        /// <returns>The security question for the specified user, or null if not found.</returns>
         public async Task<string> GetSecurityQuestionAsync(string userNameOrEmail)
         {
             var user = await _context.Users
@@ -171,6 +188,12 @@ namespace ReadersChronicle.Services
             return user?.SecurityQuestion;
         }
 
+        /// <summary>
+        /// Verifies the security answer provided by the user.
+        /// </summary>
+        /// <param name="userNameOrEmail">The username or email of the user.</param>
+        /// <param name="answer">The answer to verify.</param>
+        /// <returns>True if the security answer is correct, false otherwise.</returns>
         public async Task<bool> VerifySecurityAnswerAsync(string userNameOrEmail, string answer)
         {
             var user = await _context.Users
@@ -182,6 +205,12 @@ namespace ReadersChronicle.Services
             return passwordHasher.VerifyHashedPassword(null, user.SecurityAnswerHash, answer) == PasswordVerificationResult.Success;
         }
 
+        /// <summary>
+        /// Resets the password for a user identified by username or email.
+        /// </summary>
+        /// <param name="userNameOrEmail">The username or email of the user.</param>
+        /// <param name="newPassword">The new password to set.</param>
+        /// <returns>True if the password reset was successful, false otherwise.</returns>
         public async Task<bool> ResetPasswordAsync(string userNameOrEmail, string newPassword)
         {
             var user = await _context.Users
@@ -196,6 +225,12 @@ namespace ReadersChronicle.Services
             return true;
         }
 
+        /// <summary>
+        /// Changes the password for a user.
+        /// </summary>
+        /// <param name="model">The model containing the old and new passwords.</param>
+        /// <param name="user">The user whose password is being changed.</param>
+        /// <returns>True if the password change was successful, false otherwise.</returns>
         public async Task<bool> ChangePassword(ChangePasswordViewModel model, User user)
         {
             var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
@@ -209,6 +244,12 @@ namespace ReadersChronicle.Services
             return false;
         }
 
+        /// <summary>
+        /// Updates the profile information for the currently authenticated user.
+        /// </summary>
+        /// <param name="userPrincipal">The claims principal representing the current user.</param>
+        /// <param name="model">The model containing the updated profile information.</param>
+        /// <returns>A tuple containing a success flag and a message indicating the profile update result.</returns>
         public async Task<(bool IsSuccess, string Message)> EditUserProfileAsync(ClaimsPrincipal userPrincipal, EditProfileViewModel model)
         {
             var user = await _userManager.GetUserAsync(userPrincipal);
@@ -251,6 +292,12 @@ namespace ReadersChronicle.Services
             return (true, "Profile updated successfully.");
         }
 
+        /// <summary>
+        /// Updates the profile image for the currently authenticated user.
+        /// </summary>
+        /// <param name="userPrincipal">The claims principal representing the current user.</param>
+        /// <param name="profileImage">The new profile image to set.</param>
+        /// <returns>A tuple containing a success flag and a message indicating the profile image update result.</returns>
         public async Task<(bool IsSuccess, string Message)> ChangeUserProfileImageAsync(ClaimsPrincipal userPrincipal, IFormFile profileImage)
         {
             var user = await _userManager.GetUserAsync(userPrincipal);
@@ -284,6 +331,12 @@ namespace ReadersChronicle.Services
             }
         }
 
+        /// <summary>
+        /// Deletes the user account for the currently authenticated user.
+        /// </summary>
+        /// <param name="userPrincipal">The claims principal representing the current user.</param>
+        /// <param name="password">The password to verify before deleting the account.</param>
+        /// <returns>A tuple containing a success flag and a message indicating the account deletion result.</returns>
         public async Task<(bool IsSuccess, string Message)> DeleteUserAccountAsync(ClaimsPrincipal userPrincipal, string password)
         {
             var user = await _userManager.GetUserAsync(userPrincipal);
