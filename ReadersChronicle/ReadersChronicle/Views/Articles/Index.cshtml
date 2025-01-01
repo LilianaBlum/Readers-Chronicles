@@ -2,17 +2,17 @@
 
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger text-center">@TempData["Error"]</div>
 }
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success text-center">@TempData["Success"]</div>
 }
 
-<div class="container mt-4">
+<div class="container" id="article-container">
     <!-- Navigation -->
-    <ul class="navbar-nav mb-4" style="width: 100%; display: flex; flex-direction: row; gap: 20px;">
+    <ul class="navbar-nav" style="width: 100%; display: flex; flex-direction: row; gap: 20px;">
         <li class="nav-item">
             <a class="fw-bold nav-link text-decoration-underline @(ViewData["ViewType"] as string == "All" ? "text-primary" : "text-secondary")"
                asp-controller="Articles" asp-action="Index" asp-route-viewType="All">All Articles</a>
@@ -27,24 +27,23 @@
     </ul>
 
     <!-- Articles -->
-    <h1>Articles</h1>
-    <div class="row">
+    <div class="row mt-4">
         @foreach (var article in Model.Articles)
         {
             <div class="col-md-4 mb-4">
-                <div class="card">
+                <div class="card shadow-sm h-100">
                     <img class="card-img-top" src="data:@article.PictureMimeType;base64,@Convert.ToBase64String(article.Picture)" alt="Article Picture" />
                     <div class="card-body">
-                        <h5 class="card-title">@article.Title</h5>
-                        <p class="card-text">@article.Description.Substring(0, Math.Min(50, article.Description.Length))...</p>
+                        <h5 class="card-title" style="font-size: 1.2rem; color: #333;">@article.Title</h5>
+                        <p class="card-text" style="color: #666;">@article.Description.Substring(0, Math.Min(50, article.Description.Length))...</p>
                         <small class="text-muted">By @article.User.UserName on @article.TimeCreated.ToShortDateString()</small>
-                        <div class="mt-2">
-                            <a asp-action="Details" asp-route-id="@article.Id" class="btn btn-primary btn-sm">Show more</a>
+                        <div class="mt-3">
+                            <a asp-action="Details" asp-route-id="@article.Id" class="btn btn-primary btn-sm fw-bold">Show more</a>
                             @if (ViewData["ViewType"]?.ToString() == "My")
                             {
-                                <a asp-action="Edit" asp-route-id="@article.Id" class="btn btn-warning btn-sm">Edit</a>
-                                <form asp-action="Delete" asp-route-id="@article.Id" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                <a asp-action="Edit" asp-route-id="@article.Id" class="btn btn-warning btn-sm ms-2 px-3 fw-bold text-white">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@article.Id" method="post" class="d-inline ms-2">
+                                    <button type="submit" class="btn btn-danger btn-sm fw-bold">Delete</button>
                                 </form>
                             }
                         </div>
@@ -52,11 +51,10 @@
                 </div>
             </div>
         }
-
     </div>
 
     <!-- Modal for Creating Articles -->
-    <div class="modal fade mt-5" id="createArticleModal" tabindex="-1" aria-labelledby="createArticleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createArticleModal" tabindex="-1" aria-labelledby="createArticleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -90,15 +88,20 @@
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-
 
 <style>
+    #article-container{
+        margin-top: 50px;
+        margin-bottom: 50px;
+        padding:5%;
+        background-color: #ffffff; /* White background */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+
     .card {
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        max-width: 300px;
-        overflow: hidden;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .card-img-top {
@@ -108,10 +111,107 @@
 
     .card-body {
         padding: 15px;
+        background-color: #fff;
     }
 
-    textarea {
-        resize: none;
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
     }
 
+    .card-text {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background-color: #6d486b;
+        border: none;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+
+    .text-primary{
+        color: #6d486b !important;
+        font-weight:bold;
+    }
+
+
+        .btn-primary:hover {
+            background-color: #8d6b88;
+        }
+
+    .btn-warning {
+        background-color: #f3c65f;
+        border: none;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+
+        .btn-warning:hover {
+            background-color: #fbea8c;
+        }
+
+    .btn-danger {
+        background-color: #d26466;
+        border: none;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        background-color: #6d486b;
+        color: white;
+    }
+
+    .modal-body {
+        background-color: #f9f9f9;
+    }
+
+    .modal-dialog{
+        margin-top:12%;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+
+    .alert {
+        font-weight: bold;
+        padding: 10px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #6d486b;
+        margin-bottom: 20px;
+        text-align: center;
+    }
 </style>

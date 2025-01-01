@@ -29,6 +29,13 @@ namespace ReadersChronicle.Services
             return true;
         }
 
+        public async Task<int> GetArticleID(int commentId)
+        {
+            var comment = await _context.Comments.FindAsync(commentId);
+
+            return comment.ArticleId;
+        }
+
         public async Task<Comment?> GetCommentForEditAsync(int commentId, string userId)
         {
             var comment = await _context.Comments

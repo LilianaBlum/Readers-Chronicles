@@ -96,6 +96,8 @@ public class ArticleService
             .Where(c => c.ArticleId == articleId)
             .ToListAsync();
 
+        comments.Reverse();
+
         var userLikedComments = await _context.CommentRatings
             .Where(cr => cr.UserId == userId)
             .ToListAsync();

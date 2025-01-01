@@ -83,6 +83,7 @@ namespace ReadersChronicle.Controllers
             }
 
             ModelState.AddModelError(string.Empty, message);
+
             return View(model);
         }
 
@@ -216,7 +217,7 @@ namespace ReadersChronicle.Controllers
 
             if (!result)
             {
-                ModelState.AddModelError(string.Empty, "The old password is incorrect or the new password is invalid.");
+                ModelState.AddModelError(string.Empty, "The old password is incorrect");
                 return View(model);
             }
 
@@ -318,7 +319,7 @@ namespace ReadersChronicle.Controllers
             }
 
             TempData["ErrorMessage"] = message;
-            return RedirectToAction("Profile");
+            return RedirectToAction("DeleteProfileConfirmation");
         }
     }
 }

@@ -30,11 +30,11 @@ namespace ReadersChronicle.Services
         public async Task<(bool Success, string Message)> SendFriendRequestAsync(string initiatorUserId, string approvingUserId)
         {
             var existingRequest = await _context.PendingFriendships
-        .FirstOrDefaultAsync(pf => pf.InitiatorUserID == initiatorUserId && pf.ApprovingUserID == approvingUserId);
+        .FirstOrDefaultAsync(pf => pf.InitiatorUserID == initiatorUserId && pf.ApprovingUserID == approvingUserId || pf.InitiatorUserID == approvingUserId && pf.ApprovingUserID == initiatorUserId);
 
             if (existingRequest != null)
             {
-                return (false, "You already have a pending friendship request for this user.");
+                return (false, "You already have a pending friendship request with this user.");
             }
 
             var existingFriendship = await _context.Friendships
@@ -102,6 +102,20 @@ namespace ReadersChronicle.Services
 
                 _context.Friendships.Add(friendship);
                 _context.PendingFriendships.Remove(pending);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task RemoveFriendAsync(string currentUserId, string friendId)
+        {
+            var friendship = await _context.Friendships
+                .FirstOrDefaultAsync(f =>
+                    (f.User1ID == currentUserId && f.User2ID == friendId) ||
+                    (f.User1ID == friendId && f.User2ID == currentUserId));
+
+            if (friendship != null)
+            {
+                _context.Friendships.Remove(friendship);
                 await _context.SaveChangesAsync();
             }
         }

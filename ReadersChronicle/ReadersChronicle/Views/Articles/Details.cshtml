@@ -1,79 +1,80 @@
 ﻿@model ReadersChronicle.Models.ArticleDetailsViewModel
 @using System.Security.Claims
 
-<div class="container mt-4">
-    <div class="row mb-5 ms-1">
-        <a asp-action="Index" class="btn btn-secondary" style="width:80px;">Back</a>
-    </div>
-    <div class="row">
-        <div class="col-md-8">
-            <img class="img-fluid" src="data:@Model.PictureMimeType;base64,@Convert.ToBase64String(Model.Picture)" alt="Article Image" />
-            <h1 class="mt-3">@Model.Title</h1>
-            <small class="text-muted">By @Model.UserName on @Model.TimeCreated.ToShortDateString()</small>
-            <p class="mt-4">@Model.Description</p>
+<div class="container" id="article-details-container">
+    <div class="bg-white p-4 rounded shadow">
+        <div class="row ms-1" id="back-button">
+            <a asp-action="Index" class="btn btn-secondary" style="width:80px;">Back</a>
         </div>
-        <div class="col-md-4">
-            <form asp-action="Like" asp-route-id="@Model.Id" method="post" class="d-inline">
-                <button type="submit" class="btn article-like-button" style="background-color: @(Model.UserLiked ? "#ff5e5e" : "#ccc"); color: white;">
-                    @(Model.UserLiked ? "Unlike" : "Like")
-                </button>
-            </form>
-            <span class="ms-2">Likes: @Model.TotalLikes</span>
-
-            <hr />
-
-            <h3>Comments</h3>
-            <div id="comments-section">
-                <form asp-action="AddComment" method="post">
-                    <input type="hidden" name="articleId" value="@Model.Article.Id" />
-                    <div class="comment-section">
-                        <div class="comment-input">
-                            <textarea name="description" placeholder="Add a comment..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn post-comment-btn">Post</button>
-                    </div>
+        <div class="row">
+            <div class="col-md-4">
+                <img class="img-fluid" src="data:@Model.PictureMimeType;base64,@Convert.ToBase64String(Model.Picture)" alt="Article Image" />
+            </div>
+            <div class="col-md-4">
+                <h1 class="mt-3">@Model.Title</h1>
+                <small class="text-muted">By @Model.UserName on @Model.TimeCreated.ToShortDateString()</small>
+                <p class="mt-4">@Model.Description</p>
+            </div>
+            <div class="col-md-4" id="like-comment-section">
+                <form asp-action="Like" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn article-like-button" style="background-color: @(Model.UserLiked ? "#ff5e5e" : "#ccc"); color: white;">
+                        @(Model.UserLiked ? "Unlike" : "Like")
+                    </button>
                 </form>
-                @foreach (var comment in Model.Comments)
-                {
-                    <div class="comment ps-0 pe-0">
-                        <div class="row">
-                            <div class="col-md-9 d-flex">
-                                <p style="word-break: break-all;"><strong>@comment.User.UserName:</strong> @comment.Description</p>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="row d-flex text-align-center">
-                                    <div>
-                                        <form asp-action="LikeComment" method="post" asp-route-commentId="@comment.CommentId">
-                                            <button type="submit" class="like-btn @((Model.UserLikedComments.Any(cr => cr.CommentId == comment.CommentId)) ? "liked" : "")">
-                                                <i class="fas fa-heart"></i>
-                                            </button>
-                                        </form>
+                <span class="ms-2">Likes: @Model.TotalLikes</span>
 
-                                        <span class="like-count">
-                                            Likes: @Model.UserLikedComments.Count(cr => cr.CommentId == comment.CommentId)
-                                        </span>
+                <hr />
+
+                <h3>Comments</h3>
+                <div id="comment-section" class="comments-container">
+                    <form asp-action="AddComment" method="post">
+                        <input type="hidden" name="articleId" value="@Model.Article.Id" />
+                        <div class="comment-section">
+                            <div class="comment-input">
+                                <textarea name="description" placeholder="Add a comment..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-secondary post-comment-btn">Post</button>
+                        </div>
+                    </form>
+                    <div class="comment-list">
+                        @foreach (var comment in Model.Comments)
+                        {
+                            <div class="comment ps-0 pe-0">
+                                <div class="row">
+                                    <div class="col-md-8 d-flex">
+                                        <p style="word-break: break-all;"><strong>@comment.User.UserName:</strong> @comment.Description</p>
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-center justify-content-between flex-row">
+                                        <div>
+                                            <form asp-action="LikeComment" method="post" asp-route-commentId="@comment.CommentId">
+                                                <button type="submit" class="like-btn @((Model.UserLikedComments.Any(cr => cr.CommentId == comment.CommentId)) ? "liked" : "")">
+                                                    <i class="fas fa-heart"></i>
+                                                </button>
+                                            </form>
+                                            <span class="like-count">
+                                                Likes: @Model.UserLikedComments.Count(cr => cr.CommentId == comment.CommentId)
+                                            </span>
+                                        </div>
+                                        @if (comment.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                                        {
+                                            <button class="btn btn-options" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="@Url.Action("Edit", "Comment", new { commentId = comment.CommentId })">Edit</a></li>
+                                                <li>
+                                                    <form asp-action="Delete" asp-controller="Comment" method="post" asp-route-commentId="@comment.CommentId">
+                                                        <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        }
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-1 pa-0">
-                                @if (comment.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
-                                {
-                                    <button class="btn btn-options" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="@Url.Action("Edit", "Comment", new { commentId = comment.CommentId })">Edit</a></li>
-                                        <li>
-                                            <form asp-action="Delete" asp-controller="Comment" method="post" asp-route-commentId="@comment.CommentId">
-                                                <button type="submit" class="dropdown-item text-danger">Delete</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                }
-                            </div>
-                        </div>
+                        }
                     </div>
-                }
+                </div>
             </div>
         </div>
     </div>
@@ -97,8 +98,33 @@
 </script>
 
 <style scoped>
+    #back-button{
+        margin-bottom:20px;
+    }
+
+    #article-details-container{
+        margin-top:8%;
+    }
+
+    .bg-white {
+        background-color: #ffffff;
+        padding-left:20px;
+    }
+
     img{
-        width:200px;
+        width:100%;
+        height:100%;
+    }
+
+    .btn-secondary {
+        background-color: #6d486b;
+        border: none;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+
+        .btn-secondary:hover {
+        background-color: #8d6b88;
     }
 
     .comment-section {
@@ -131,7 +157,7 @@
             }
 
     .post-comment-btn {
-        background-color: #007bff;
+        background-color: #6d486b;
         color: white;
         border: none;
         border-radius: 5px;
@@ -142,19 +168,19 @@
         transition: background-color 0.2s;
     }
 
-        .post-comment-btn:hover {
-            background-color: #0056b3;
-            color: white;
-            font-weight:bold;
-        }
+    .comments-container {
+        max-height: 550px; /* Limit height */
+        overflow-y: auto; /* Allow vertical scroll */
+        overflow-x: hidden; /* Prevent horizontal scroll */
+        padding-right: 10px;
+    }
 
-        .post-comment-btn:focus {
-            outline: none;
-        }
+    .comment-list {
+        margin-top: 20px;
+    }
 
     .comment {
         margin-bottom: 15px;
-        padding: 10px;
         border-bottom: 1px solid #ddd;
     }
 
@@ -251,5 +277,33 @@
 
     #comments-section > div > div > div.col-md-2 > div{
         text-align:center !important;
+    }
+
+    @@media (max-width: 768px) {
+        #article-details-container {
+            margin-top: 18%;
+        }
+
+        .like-count {
+        display: block; /* Ensure like count doesn't break alignment */
+        text-align: center;
+        margin-top: 5px;
+    }
+
+        .col-md-3 {
+            gap: 10px; /* Add spacing between buttons */
+        }
+
+        .btn-options {
+            margin-left: 10px; /* Add spacing if needed */
+        }
+
+        #like-comment-section{
+            margin-top:30px;
+        }
+
+        #back-button {
+            margin-bottom: 10px;
+        }
     }
 </style>

@@ -10,8 +10,8 @@
                     <input type="text" class="form-control rounded-pill shadow-sm" name="query" placeholder="Search by book title" />
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-dark rounded-pill" id="search-journal-button">Search</button>
-                    <a href="@Url.Action("BookJournal", "Home")" class="btn btn-outline-dark rounded-pill" id="show-all-users-button">Show All</a>
+                    <button type="submit" class="btn btn-primary rounded-pill" id="search-journal-button">Search</button>
+                    <a href="@Url.Action("BookJournal", "Home")" class="btn btn-primary rounded-pill" id="show-all-users-button">Show All</a>
                 </div>
             </div>
         </form>
@@ -238,6 +238,7 @@
                     if (response.success) {
                         $('#editJournalModal').modal('hide'); // Close modal if successful
                         location.reload();  // Reload the page to fetch updated journal list
+                        alert(response.message);
                     } else {
                         alert('Error: ' + response.message || 'Unknown error');
                     }
@@ -268,6 +269,18 @@
 
         .btn-outline-primary:hover {
             background-color: #8d6b88;
+            border-color: #6c757d;
+        }
+
+    .btn-primary {
+        color: #fff;
+        background-color:#8d6b88; 
+        border-color: #8d6b88;
+    }
+
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #8d6b88;
             border-color: #6c757d;
         }
 </style>

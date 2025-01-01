@@ -4,23 +4,27 @@
     ViewData["Title"] = "Edit Comment";
 }
 
-<h4>Edit Comment</h4>
+<div class="container" id="edit-comment-container">
+    <div class="bg-white p-4 rounded shadow">
+        <h4>Edit Comment</h4>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" name="commentId" value="@Model.CommentId" />
+        <form asp-action="Edit" method="post">
+            <input type="hidden" name="commentId" value="@Model.CommentId" />
 
-    <!-- Textarea for editing the comment description -->
-    <div class="mb-3">
-        <label for="description" class="form-label">Comment</label>
-        <textarea name="description" id="description" class="form-control" required>@Model.Description</textarea>
+            <!-- Textarea for editing the comment description -->
+            <div class="mb-3">
+                <label for="description" class="form-label">Comment</label>
+                <textarea name="description" id="description" class="form-control" required>@Model.Description</textarea>
+            </div>
+
+            <!-- Submit Button to save the edited comment -->
+            <button type="submit" class="btn btn-primary">Update Comment</button>
+
+            <!-- Button to cancel and return to the previous page -->
+            <a href="@Url.Action("Details", "Articles", new { id = Model.ArticleId })" class="btn btn-secondary">Cancel</a>
+        </form>
     </div>
-
-    <!-- Submit Button to save the edited comment -->
-    <button type="submit" class="btn btn-primary">Update Comment</button>
-
-    <!-- Button to cancel and return to the previous page -->
-    <a href="@Url.Action("Details", "Articles", new { id = Model.ArticleId })" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 <style scoped>
     textarea {
@@ -34,5 +38,33 @@
     .btn-primary {
         background-color: #f56476;
         border-color: #f56476;
+    }
+
+    #edit-comment-container {
+        margin-top: 15%;
+    }
+
+    .btn-primary {
+        background-color: #6d486b;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background-color: #5a3b5a;
+        }
+
+    .btn-secondary {
+        background-color: #8d6b88;
+    }
+
+    .bg-white {
+        background-color: #ffffff;
+        padding-left: 20px;
+    }
+
+    @@media (max-width: 768px) {
+        #edit-comment-container {
+            margin-top: 22%;
+        }
     }
 </style>

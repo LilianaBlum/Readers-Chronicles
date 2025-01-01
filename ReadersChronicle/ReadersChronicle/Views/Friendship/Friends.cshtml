@@ -13,7 +13,13 @@
             {
                 <li class="list-group-item d-flex align-items-center justify-content-between">
                     <span class="friend-username">@friend.UserName</span>
-                    <a href="@Url.Action("Chat", "Messaging", new { userId = friend.Id })" class="btn btn-primary btn-sm">Message</a>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("Chat", "Messaging", new { userId = friend.Id })" class="btn btn-primary btn-sm">Message</a>
+                        <form asp-action="RemoveFriend" method="post" class="d-inline">
+                            <input type="hidden" name="friendId" value="@friend.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                        </form>
+                    </div>
                 </li>
             }
         </ul>
@@ -46,6 +52,9 @@
         padding: 15px 20px;
         border-radius: 5px;
         margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         transition: background-color 0.3s ease;
     }
 
@@ -62,10 +71,24 @@
             background-color: #8d6b88;
         }
 
+    .btn-danger {
+        background-color: #c9302c;
+        border: none;
+    }
+
+        .btn-danger:hover {
+            background-color: #d9534f;
+        }
+
     .friend-username {
         font-size: 1.2rem;
         color: #555;
         font-weight: bold;
+        margin-right: auto; /* Pushes buttons to the right */
+    }
+
+    .d-flex.gap-2 > * {
+        margin-left: 8px; /* Small gap between buttons */
     }
 
     p {

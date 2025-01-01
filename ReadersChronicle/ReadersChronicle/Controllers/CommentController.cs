@@ -27,6 +27,9 @@ namespace ReadersChronicle.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+
+            var articleID = await _commentService.GetArticleID(commentId);
+
             var success = await _commentService.DeleteCommentAsync(commentId, userId);
 
             if (!success)
@@ -34,7 +37,8 @@ namespace ReadersChronicle.Controllers
                 return Unauthorized();
             }
 
-            return RedirectToAction("Details", "Articles", new { id = commentId });
+
+            return RedirectToAction("Details", "Articles", new { id = articleID });
         }
 
         [HttpGet]

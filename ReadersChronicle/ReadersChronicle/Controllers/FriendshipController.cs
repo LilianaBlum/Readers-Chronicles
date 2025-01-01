@@ -76,6 +76,14 @@ namespace ReadersChronicle.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> RemoveFriend(string friendId)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            await _friendshipService.RemoveFriendAsync(currentUserId, friendId);
+            return RedirectToAction(nameof(Friends));
+        }
+
+        [HttpPost]
         public async Task<IActionResult> DenyRequest(int friendshipId)
         {
             var currentUserId = _userManager.GetUserId(User);

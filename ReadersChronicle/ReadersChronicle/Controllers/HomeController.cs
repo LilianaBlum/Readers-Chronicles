@@ -257,7 +257,7 @@ namespace ReadersChronicle.Controllers
                     await _bookService.SaveEditedJournalAsync(journal, model);
 
                     // Return success response
-                    return Json(new { success = true });
+                    return Json(new { success = true, message = "Journal was successfully updated!" });
                 }
                 else
                 {

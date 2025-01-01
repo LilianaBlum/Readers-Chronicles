@@ -40,28 +40,57 @@ namespace ReadersChronicle.Services
         public async Task<List<BookViewModel>> SearchBooksAsync(string query)
         {
             var userId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
-            var requestUri = $"https://www.googleapis.com/books/v1/volumes?q={query}";
+            //    var requestUri = $"https://www.googleapis.com/books/v1/volumes?q={query}";
 
+            //    var response = await _httpClient.GetAsync(requestUri);
+            //    response.EnsureSuccessStatusCode();
+
+            //    var content = await response.Content.ReadAsStringAsync();
+            //    var json = JObject.Parse(content);
+
+            //    var bookIds = json["items"]
+            //.Select(item => (string)item["id"])
+            //.ToList();
+
+            //    var books = json["items"]
+            //        .Select(item => new BookViewModel
+            //        {
+            //            Title = (string)item["volumeInfo"]["title"],
+            //            Author = string.Join(", ", item["volumeInfo"]["authors"] ?? new JArray()),
+            //            BookId = (string)item["id"],
+            //            PageCount = (int?)item["volumeInfo"]["pageCount"] ?? 0,
+            //            CoverUrl = (string)item["volumeInfo"]["imageLinks"]?["thumbnail"],
+            //        })
+            //    .ToList();
+
+            // Construct the Open Library API URL
+            var requestUri = $"https://openlibrary.org/search.json?q={Uri.EscapeDataString(query)}";
+
+            // Fetch data from Open Library
             var response = await _httpClient.GetAsync(requestUri);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
             var json = JObject.Parse(content);
 
-            var bookIds = json["items"]
-        .Select(item => (string)item["id"])
-        .ToList();
+            // Extract book data
+            var bookDocs = json["docs"]?.ToList() ?? new List<JToken>();
 
-            var books = json["items"]
-                .Select(item => new BookViewModel
+            var books = bookDocs
+                .Select(doc => new BookViewModel
                 {
-                    Title = (string)item["volumeInfo"]["title"],
-                    Author = string.Join(", ", item["volumeInfo"]["authors"] ?? new JArray()),
-                    BookId = (string)item["id"],
-                    PageCount = (int?)item["volumeInfo"]["pageCount"] ?? 0,
-                    CoverUrl = (string)item["volumeInfo"]["imageLinks"]?["thumbnail"],
+                    Title = (string)doc["title"] ?? "Unknown Title",
+                    Author = string.Join(", ", doc["author_name"]?.Select(a => a.ToString()) ?? new List<string>()),
+                    BookId = (string)doc["key"], // Open Library book ID (e.g., "/works/OL123456W")
+                    PageCount = (int?)doc["number_of_pages_median"] ?? 0,
+                    CoverUrl = doc["cover_i"] != null
+                        ? $"https://covers.openlibrary.org/b/id/{doc["cover_i"]}-L.jpg"
+                        : null,
                 })
-            .ToList();
+                .ToList();
+
+            // Get books already in the user's library
+            var bookIds = books.Select(b => b.BookId).ToList();
 
             var userBookIds = await _context.UserBooks
        .Where(ub => ub.UserID == userId && bookIds.Contains(ub.BookApiID))
@@ -111,8 +140,17 @@ namespace ReadersChronicle.Services
         {
             if (string.IsNullOrEmpty(coverUrl))
             {
-                return null;
+                // Use the default image if no cover URL is provided
+                var defaultImagePath = Path.Combine("wwwroot", "Common", "grey-image.jpg");
+
+                if (File.Exists(defaultImagePath))
+                {
+                    return await File.ReadAllBytesAsync(defaultImagePath);
+                }
+
+                throw new FileNotFoundException("Default image not found at " + defaultImagePath);
             }
+
 
             try
             {
@@ -179,7 +217,7 @@ namespace ReadersChronicle.Services
         public async Task<List<BookJournalViewModel>> SearchBookJournalAsync(string userId, string query)
         {
             var userBooks = await _context.UserBooks
-        .Where(ub => ub.UserID == userId && ub.Title.Contains(query))
+        .Where(ub => ub.UserID == userId && ub.Title.Contains(query) || ub.Author.Contains(query))
         .ToListAsync();
 
             var bookIds = userBooks.Select(ub => ub.UserBookID).ToList();

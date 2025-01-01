@@ -41,6 +41,24 @@ namespace ReadersChronicle.Services
             return user == null;
         }
 
+        public async Task<bool> IsUsernameUniqueForProfileUpdateAsync(string username, string currentUsername)
+        {
+            var user = await _context.Users
+                .Where(u => u.UserName.Equals(username) && u.UserName != currentUsername)
+                .FirstOrDefaultAsync();
+
+            return user == null;
+        }
+
+        public async Task<bool> IsEmailUniqueForProfileUpdateAsync(string email, string currentEmail)
+        {
+            var user = await _context.Users
+                .Where(u => u.Email.Equals(email) && u.Email != currentEmail)
+                .FirstOrDefaultAsync();
+
+            return user == null;
+        }
+
 
         public async Task<(bool IsSuccess, string Message)> LoginAsync(LoginViewModel model)
         {
@@ -60,33 +78,32 @@ namespace ReadersChronicle.Services
 
             if (result.Succeeded)
             {
-                var token = GenerateJwtToken(user);
-                return (true, token);
+                return (true, "Login was succesfull!");
             }
 
             return (false, "Invalid username or password.");
         }
 
-        private string GenerateJwtToken(User user)
-        {
-            var claims = new[]
-            {
-            new Claim("userName", user.UserName),
-            new Claim("userId", user.Id.ToString()),
-            new Claim("UserType", user.UserType)
-        };
+        //private string GenerateJwtToken(User user)
+        //{
+        //    var claims = new[]
+        //    {
+        //    new Claim("userName", user.UserName),
+        //    new Claim("userId", user.Id.ToString()),
+        //    new Claim("UserType", user.UserType)
+        //};
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddHours(5),
-                signingCredentials: creds);
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        //    var token = new JwtSecurityToken(
+        //        issuer: _configuration["Jwt:Issuer"],
+        //        audience: _configuration["Jwt:Audience"],
+        //        claims: claims,
+        //        expires: DateTime.Now.AddHours(5),
+        //        signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
 
         public async Task LogoutAsync()
         {
@@ -204,6 +221,19 @@ namespace ReadersChronicle.Services
             if (profile == null)
             {
                 return (false, "Profile not found. Please create a profile first.");
+            }
+
+            bool isUsernameUnique = await IsUsernameUniqueForProfileUpdateAsync(model.UserName, user.UserName);
+            bool isEmailUnique = await IsEmailUniqueForProfileUpdateAsync(model.Email, user.Email);
+
+            if (!isUsernameUnique)
+            {
+                return (false, "Username is already taken.");
+            }
+
+            if (!isEmailUnique)
+            {
+                return (false, "Email is already taken.");
             }
 
             user.UserName = model.UserName;

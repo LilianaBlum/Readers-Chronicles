@@ -2,6 +2,18 @@
 
 <div class="container" id="registration-container">
     <div id="register-container" class="w-100">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
         <h2 class="fw-bold text-uppercase text-center mb-4">Register</h2>
 
         @if (ViewData["ErrorMessage"] != null)
