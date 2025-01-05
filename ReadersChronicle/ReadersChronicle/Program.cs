@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +73,7 @@ namespace ReadersChronicle
                 app.UseHsts();
             }
             
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -80,7 +81,6 @@ namespace ReadersChronicle
 
             app.UseAuthentication();  // Use Authentication middleware
             app.UseAuthorization();
-
 
             // Set up default controller routing
             app.MapControllerRoute(
