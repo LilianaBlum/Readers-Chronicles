@@ -2,14 +2,11 @@
 using ReadersChronicle.Models;
 using ReadersChronicle.Services;
 using ReadersChronicle.Data;
-using ReadersChronicle.Settings;
 using Moq;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using System.Runtime.Intrinsics.X86;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ReadersChronicleTest
 {
@@ -763,5 +760,262 @@ namespace ReadersChronicleTest
             Assert.AreEqual("Error updating user: Invalid username.", result.Message);
         }
 
+        [TestMethod]
+        public async Task ChangePassword_ShouldReturnTrue_WhenPasswordIsChangedSuccessfully()
+        {
+            var passwordHasher = new PasswordHasher<User>();
+            var userId = Guid.NewGuid();
+
+            var user = new User
+            {
+                Id = userId.ToString(),
+                UserName = "existingUser",
+                Email = "existingUser@example.com",
+                PasswordHash = passwordHasher.HashPassword(null, "Password123"),
+                SecurityQuestion = "This is question",
+                SecurityAnswerHash = "This is answer"
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var mockUserManager = new Mock<UserManager<User>>(
+        new Mock<IUserStore<User>>().Object,
+        null,
+        new PasswordHasher<User>(),
+        null, null, null, null, null, null
+    );
+
+            mockUserManager
+                .Setup(um => um.ChangePasswordAsync(user, "Password123", "NewPassword123"))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userService = new UserService(_context, mockUserManager.Object, _signInManager);
+
+            var model = new ChangePasswordViewModel
+            {
+                OldPassword = "Password123",
+                NewPassword = "NewPassword123"
+            };
+
+            // Act
+            var result = await _userService.ChangePassword(model, user);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task ChangePassword_ShouldReturnFalse_WhenOldPasswordIsIncorrect()
+        {
+            // Arrange
+            var passwordHasher = new PasswordHasher<User>();
+            var userId = Guid.NewGuid();
+
+            var user = new User
+            {
+                Id = userId.ToString(),
+                UserName = "existingUser",
+                Email = "existingUser@example.com",
+                PasswordHash = passwordHasher.HashPassword(null, "Password123"),
+                SecurityQuestion = "This is question",
+                SecurityAnswerHash = "This is answer"
+            };
+
+            // Add the user to the in-memory database
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Mocking the ChangePasswordAsync method
+            var mockUserManager = new Mock<UserManager<User>>(
+                new Mock<IUserStore<User>>().Object,
+                null,
+                new PasswordHasher<User>(),
+                null, null, null, null, null, null
+            );
+
+            // Mock the failure case for incorrect old password
+            mockUserManager
+                .Setup(um => um.ChangePasswordAsync(user, "WrongPassword123", "NewPassword123"))
+                .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Old password is incorrect" }));
+
+            _userService = new UserService(_context, mockUserManager.Object, _signInManager);
+
+            var model = new ChangePasswordViewModel
+            {
+                OldPassword = "WrongPassword123",
+                NewPassword = "NewPassword123"
+            };
+
+            // Act
+            var result = await _userService.ChangePassword(model, user);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task DeleteUserAccountAsync_ShouldReturnSuccess_WhenUserIsDeletedSuccessfully()
+        {
+            // Arrange
+            var passwordHasher = new PasswordHasher<User>();
+            var userId = Guid.NewGuid().ToString(); // Generate a unique user ID
+
+            var user = new User
+            {
+                Id = userId,
+                UserName = "existingUser",
+                Email = "existingUser@example.com",
+                PasswordHash = passwordHasher.HashPassword(null, "Password123"),
+                SecurityQuestion = "MotherMaidenName",
+                SecurityAnswerHash = passwordHasher.HashPassword(null, "MyMaidenName")
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Mock Profile for User
+            var profile = new Profile { UserID = userId, Bio = "string", ImageData = new byte[3] { 1, 2, 3 }, ImageMimeType = "image/png" };
+            _context.Profiles.Add(profile);
+            await _context.SaveChangesAsync();
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId)
+    }));
+
+            // Mock the UserManager's GetUserAsync to return the user
+            var mockUserManager = new Mock<UserManager<User>>(
+                Mock.Of<IUserStore<User>>(),
+                null,
+                new PasswordHasher<User>(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            );
+
+            mockUserManager
+                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+                .ReturnsAsync(user);
+
+            mockUserManager
+        .Setup(um => um.DeleteAsync(It.IsAny<User>()))
+        .ReturnsAsync(IdentityResult.Success);
+
+            var mockSignInManager = new Mock<SignInManager<User>>(
+                mockUserManager.Object,
+                Mock.Of<IHttpContextAccessor>(),
+                Mock.Of<IUserClaimsPrincipalFactory<User>>(),
+                null,
+                null,
+                null,
+                null
+            );
+
+            _userService = new UserService(_context, mockUserManager.Object, mockSignInManager.Object);
+
+            var password = "Password123";
+
+            // Act
+            var result = await _userService.DeleteUserAccountAsync(claimsPrincipal, password);
+
+            // Assert
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual("Your profile has been deleted successfully.", result.Message);
+        }
+
+        [TestMethod]
+        public async Task DeleteUserAccountAsync_ShouldReturnError_WhenIncorrectPasswordIsProvided()
+        {
+            var passwordHasher = new PasswordHasher<User>();
+            var userId = Guid.NewGuid().ToString(); // Generate a unique user ID
+
+            var user = new User
+            {
+                Id = userId,
+                UserName = "existingUser",
+                Email = "existingUser@example.com",
+                PasswordHash = passwordHasher.HashPassword(null, "Password123"),
+                SecurityQuestion = "MotherMaidenName",
+                SecurityAnswerHash = passwordHasher.HashPassword(null, "MyMaidenName")
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Mock Profile for User
+            var profile = new Profile { UserID = userId, Bio = "string", ImageData = new byte[3] { 1, 2, 3 }, ImageMimeType = "image/png" };
+            _context.Profiles.Add(profile);
+            await _context.SaveChangesAsync();
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId)
+    }));
+
+            // Mock the UserManager's GetUserAsync to return the user
+            var mockUserManager = new Mock<UserManager<User>>(
+                Mock.Of<IUserStore<User>>(),
+                null,
+                new PasswordHasher<User>(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            );
+
+            mockUserManager
+                .Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+                .ReturnsAsync(user);
+
+            mockUserManager
+        .Setup(um => um.DeleteAsync(It.IsAny<User>()))
+        .ReturnsAsync(IdentityResult.Success);
+
+            var mockSignInManager = new Mock<SignInManager<User>>(
+                mockUserManager.Object,
+                Mock.Of<IHttpContextAccessor>(),
+                Mock.Of<IUserClaimsPrincipalFactory<User>>(),
+                null,
+                null,
+                null,
+                null
+            );
+
+            _userService = new UserService(_context, mockUserManager.Object, mockSignInManager.Object);
+
+            var password = "WrongPassword123";
+
+            // Act
+            var result = await _userService.DeleteUserAccountAsync(claimsPrincipal, password);
+
+            // Assert
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("Incorrect password.", result.Message);
+        }
+
+        [TestMethod]
+        public async Task DeleteUserAccountAsync_ShouldReturnError_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "nonexistentUserId")
+            }));
+
+            var password = "Password123";
+
+            // Act
+            var result = await _userService.DeleteUserAccountAsync(claimsPrincipal, password);
+
+            // Assert
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual("User not found. Please log in again.", result.Message);
+        }
     }
 }

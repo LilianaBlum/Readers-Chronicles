@@ -345,7 +345,10 @@ namespace ReadersChronicle.Services
                 return (false, "User not found. Please log in again.");
             }
 
-            var passwordValid = await _userManager.CheckPasswordAsync(user, password);
+            var passwordHasher = new PasswordHasher<User>();
+            var passwordValid = passwordHasher.VerifyHashedPassword(null, user.PasswordHash, password) == PasswordVerificationResult.Success;
+
+           // var passwordValid = await _userManager.CheckPasswordAsync(user, password);
             if (!passwordValid)
             {
                 return (false, "Incorrect password.");

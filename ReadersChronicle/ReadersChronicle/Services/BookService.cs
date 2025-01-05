@@ -467,21 +467,28 @@ namespace ReadersChronicle.Services
 
         public async Task AddToJournalAsync(int userBookId, UserBook userBook)
         {
-            var journalEntry = new BookJournal
-            {
-                UserBookID = userBookId,
-                StartDate = userBook.StartDate,
-                EndDate = userBook.EndDate,
-                OverallRating = null,
-                OverallImpression = "",
-                Insights = "",
-                AuthorsAim = "",
-                Recommendation = "",
-                AdditionalNotes = "",
-            };
+            var isUserBookExisting = await _context.UserBooks
+                .Where(b => b.UserBookID == userBookId)
+                .FirstOrDefaultAsync();
 
-            _context.BookJournals.Add(journalEntry);
-            await _context.SaveChangesAsync();
+            if(isUserBookExisting != null)
+            {
+                var journalEntry = new BookJournal
+                {
+                    UserBookID = userBookId,
+                    StartDate = userBook.StartDate,
+                    EndDate = userBook.EndDate,
+                    OverallRating = null,
+                    OverallImpression = "",
+                    Insights = "",
+                    AuthorsAim = "",
+                    Recommendation = "",
+                    AdditionalNotes = "",
+                };
+
+                _context.BookJournals.Add(journalEntry);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
