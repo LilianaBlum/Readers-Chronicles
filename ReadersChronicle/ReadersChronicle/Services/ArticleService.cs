@@ -251,7 +251,7 @@ public class ArticleService
             ArticleId = articleId,
             UserId = userId,
             Description = description,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Comments.Add(comment);

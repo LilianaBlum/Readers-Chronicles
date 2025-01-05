@@ -399,7 +399,7 @@ namespace ReadersChronicle.Services
             {
                 userBook.Status = "Finished";
                 userBook.CurrentPage = userBook.Length;
-                userBook.EndDate = DateTime.Now;
+                userBook.EndDate = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
         }
@@ -418,7 +418,7 @@ namespace ReadersChronicle.Services
             if (userBook != null)
             {
                 userBook.Status = "Dnf";
-                userBook.EndDate = DateTime.Now;
+                userBook.EndDate = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }
         }
