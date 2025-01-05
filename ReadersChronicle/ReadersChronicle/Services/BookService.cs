@@ -311,7 +311,7 @@ namespace ReadersChronicle.Services
             {
                 if (status == "CurrentlyReading")
                 {
-                    userBook.StartDate = DateTime.Now;
+                    userBook.StartDate = DateTime.UtcNow;
                 }
 
                 userBook.Status = status;
