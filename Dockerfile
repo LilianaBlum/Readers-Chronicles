@@ -1,8 +1,6 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-# Create a non-root user and switch to it
-RUN adduser --disabled-password --gecos "" app
+# Conditionally create the 'app' user if it doesn't exist
+RUN id -u app 2>/dev/null || adduser --disabled-password --gecos "" app
 USER app
 WORKDIR /app
 EXPOSE 8080
