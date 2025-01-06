@@ -431,8 +431,13 @@ namespace ReadersChronicle.Services
         /// <returns>A list of updated book journal entries for the user.</returns>
         public async Task<List<BookJournalViewModel>> SaveEditedJournalAsync(BookJournal journal, EditJournalViewModel model)
         {
-            journal.StartDate = model.StartDate;
-            journal.EndDate = model.EndDate;
+            if(model.StartDate > model.EndDate)
+            {
+                throw new Exception("Start date cannot be after end date!");
+            }
+
+            journal.StartDate = model.StartDate?.ToUniversalTime();
+            journal.EndDate = model.EndDate?.ToUniversalTime();
             journal.OverallRating = model.OverallRating;
             journal.OverallImpression = string.IsNullOrEmpty(model.OverallImpression) ? string.Empty : model.OverallImpression;
             journal.Insights = string.IsNullOrEmpty(model.Insights) ? string.Empty : model.Insights;

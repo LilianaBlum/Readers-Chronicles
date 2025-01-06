@@ -13,7 +13,7 @@
             <div class="col-md-4">
                 <h1 class="mt-3">@Model.Title</h1>
                 <small class="text-muted">By @Model.UserName on @Model.TimeCreated.ToShortDateString()</small>
-                <p class="mt-4">@Model.Description</p>
+                <p class="mt-4" style="word-wrap: break-word;">@Model.Description</p>
             </div>
             <div class="col-md-4" id="like-comment-section">
                 <form asp-action="Like" asp-route-id="@Model.Id" method="post" class="d-inline">
